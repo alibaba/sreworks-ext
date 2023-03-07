@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta name="renderer" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>SkyMall | 商城</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}"/>
+    <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet" type="text/css"/>
+    <link th:href="@{/css/common.css}" rel="stylesheet" type="text/css"/>
+    <script th:src="@{/layui/jquery-3.2.1.min.js}"></script>
+    <script th:src="@{/layui/layui.js}"></script>
+</head>
+<body class="site-home">
+<!--包含 头部模块-->
+<div th:replace="mall/common::head"></div>
+<!--页面主体内容-->
+<div class="layui-container" id="content">
+    <!--热门商品-->
+    <div class="layui-row">
+        <div class="layui-col-md12"><h1 class="site-h1"><i class="fa fa-heart" style="color: #FF5722;"></i> &nbsp;热门商品
+        </h1></div>
+    </div>
+    <div class="layui-row" id="product_hot">
+
+    </div>
+    <!--最新商品-->
+    <div class="layui-row">
+        <div class="layui-col-md12"><h1 class="site-h1"><i class="fa fa-calendar" style="color: #FFB800;"></i>
+            &nbsp;最新商品</h1></div>
+    </div>
+    <div class="layui-row" style="text-align: center;">
+        <div class="layui-row" id="product_new">
+
+        </div>
+        <a class="more" href="javascript: more();">点击加载更多</a>
+    </div>
+    <script>
+        //            <![CDATA[
+        var pageNo = 0;
+        $(function () {
+            //加载热门商品
+            loadHot();
+            //加载最新商品
+            loadNew(pageNo);
+        });
+
+        function loadHot() {
+            $.get("product/hot.do", function (data) {
+                if (data.state == 0) {
+                    var div = $("#product_hot");
+                    appendToPage(div, data.data);
+                } else {
+                    layer.msg("请求失败！")
+                }
+            });
+        }
+
+        function loadNew(pageindex) {
+            $.get("product/new.do?pageSize=12&pageNo=" + pageindex, function (data) {
+                layer.closeAll();
+                if (data.state == 0) {
+                    pageNo++;
+                    var div = $("#product_new");
+                    if ((!data.data || data.data.length <= 0) && pageNo > 0) {
+                        layer.msg("没有更多了");
+                    }
+                    appendToPage(div, data.data);
+                } else {
+                    layer.msg("请求失败！")
+                }
+            });
+
+        }
+        //加载更多
+        function more() {
+            var load = layer.load();
+            loadNew(pageNo);
+        }
+        // 将数据渲染到页面上
+        function appendToPage(div, data) {
+            $(data).each(function (index, item) {
+                var productDiv = $("<div class='layui-col-md3 layui-col-xs6'></div>");
+                var conetDiv = $("<div class='card layui-anim layui-anim-scale'></div>");
+                productDiv.append(conetDiv);
+                var imgdiv = $("<div class='product_image'><img src=" + item.image + "></div>");
+                conetDiv.append(imgdiv);
+                var priceDiv = $("<div style='text-align: left;'>商城价：<span class='price1'>" + item.shopPrice + "</span></div>");
+                conetDiv.append(priceDiv);
+                conetDiv.append($("<div class='product_title'><a href='/mall/product/get.html?id="+item.id+"'>" + item.title + "</a></div>"));
+                div.append(productDiv);
+            });
+        }
+
+        //            ]]>
+    </script>
+</div>
+<!--底部-->
+<div th:replace="mall/common::foot"></div>
+</body>
+</html>
