@@ -1,11 +1,8 @@
 <p align="center">
-  <img src="paas/sw-frontend/src/publicMedia/sreworks-logo.png" width="120">
+  <img src="https://github.com/alibaba/SREWorks/raw/main/paas/frontend/app/src/assets/icons/sreworks-logo.png" width="120">
 </p>
-<h1 align="center"> SREWorks </h1>
+<h1 align="center"> SREWorks-ext</h1>
 <p align="center"><b> Cloud Native DataOps & AIOps Platform </b></p>
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/alibaba/sreworks" /></a>
-  <img src="https://img.shields.io/github/repo-size/alibaba/sreworks" />
 </p>
 
 <p align="center">
