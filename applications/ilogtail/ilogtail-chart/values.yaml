@@ -1,0 +1,60 @@
+access_key: aaa
+access_key_id: bbb
+
+defaultConfig:
+  enable: true
+  stderr: false
+  stdout: true                # only collect stdout
+  labelSelector:
+    app: nginx                # choose containers with this label
+  processors:
+  - Type: processor_regex       # structure log
+    SourceKey: content
+    Regex: '([\d\.:]+) - (\S+) \[(\S+) \S+\] \"(\S+) (\S+) ([^\\"]+)\" (\d+) (\d+) \"([^\\"]*)\" \"([^\\"]*)\" \"([^\\"]*)\"'
+    Keys:
+    - remote_addr
+    - remote_user
+    - time_local
+    - method
+    - url
+    - protocol
+    - status
+    - body_bytes_sent
+    - http_referer
+    - http_user_agent
+    - http_x_forwarded_for
+  flusher_sls:
+    endpoint: <sls_endpoint>
+    projectName: <sls_project>
+    logstoreName: <sls_logstore>
+
+configs:
+  nginx_stdout:
+    enable: true
+    inputs:
+      - Type: service_docker_stdout
+        Stderr: false
+        Stdout: true                # only collect stdout
+        IncludeK8sLabel:
+          app: nginx                # choose containers with this label
+    processors:
+      - Type: processor_regex       # structure log
+        SourceKey: content
+        Regex: '([\d\.:]+) - (\S+) \[(\S+) \S+\] \"(\S+) (\S+) ([^\\"]+)\" (\d+) (\d+) \"([^\\"]*)\" \"([^\\"]*)\" \"([^\\"]*)\"'
+        Keys:
+          - remote_addr
+          - remote_user
+          - time_local
+          - method
+          - url
+          - protocol
+          - status
+          - body_bytes_sent
+          - http_referer
+          - http_user_agent
+          - http_x_forwarded_for
+    flushers:
+      - Type: flusher_stdout
+        OnlyStdout: true      
+
+test: false

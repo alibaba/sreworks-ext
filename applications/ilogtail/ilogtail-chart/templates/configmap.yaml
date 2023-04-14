@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ilogtail-user-cm
+data:
+{{- if .Values.defaultConfig.enable }}
+  default.yaml: |
+    enable: true
+    inputs:
+      - Type: service_docker_stdout
+        Stderr: {{ .Values.defaultConfig.stderr }}
+        Stdout: {{ .Values.defaultConfig.stdout }}
+        IncludeK8sLabel:
+          {{- toYaml .Values.defaultConfig.labelSelector | nindent 10 }}
+    processors:
+      {{- toYaml .Values.defaultConfig.processors | nindent 6 }}
+    flushers:
+      - Type: 
+        Endpoint: {{ .Values.defaultConfig.flusher_sls.endpoint }}
+        ProjectName: {{ .Values.defaultConfig.flusher_sls.projectName }}
+        LogstoreName: {{ .Values.defaultConfig.flusher_sls.logstoreName }}
+{{- end }}
+
+{{- range $key, $value := .Values.configs }}
+  {{ $key }}.yaml: |
+    {{- toYaml $value | nindent 4 }}
+{{- end }}
+
