@@ -7,18 +7,17 @@ data:
   default.yaml: |
     enable: true
     inputs:
-      - Type: service_docker_stdout
-        Stderr: {{ .Values.defaultConfig.stderr }}
-        Stdout: {{ .Values.defaultConfig.stdout }}
-        IncludeK8sLabel:
-          {{- toYaml .Values.defaultConfig.labelSelector | nindent 10 }}
+    - Type: service_docker_stdout
+      Stderr: {{ .Values.defaultConfig.stderr }}
+      Stdout: {{ .Values.defaultConfig.stdout }}
+      IncludeK8sLabel:
+        {{- toYaml .Values.defaultConfig.labelSelector | nindent 8 }}
     processors:
-      {{- toYaml .Values.defaultConfig.processors | nindent 6 }}
+      {{- toYaml .Values.defaultConfig.processors | nindent 4 }}
     flushers:
-      - Type: 
-        Endpoint: {{ .Values.defaultConfig.flusher_sls.endpoint }}
-        ProjectName: {{ .Values.defaultConfig.flusher_sls.projectName }}
-        LogstoreName: {{ .Values.defaultConfig.flusher_sls.logstoreName }}
+      {{- $flushers := list .Values.defaultConfig.flusher }} 
+      {{- toYaml $flushers | nindent 4 }}
+
 {{- end }}
 
 {{- range $key, $value := .Values.configs }}

@@ -23,10 +23,11 @@ defaultConfig:
     - http_referer
     - http_user_agent
     - http_x_forwarded_for
-  flusher_sls:
-    endpoint: <sls_endpoint>
-    projectName: <sls_project>
-    logstoreName: <sls_logstore>
+  flusher:
+    Type: flusher_kafka
+    Brokers:
+    - prod-dataops-kafka.sreworks-dataops:9092
+    Topic: error-log
 
 configs:
   nginx_stdout:
