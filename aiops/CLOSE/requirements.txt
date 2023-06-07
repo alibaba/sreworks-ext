@@ -1,0 +1,15 @@
+numpy==1.22.2
+nvidia-cublas-cu11==11.10.3.66
+nvidia-cuda-nvrtc-cu11==11.7.99
+nvidia-cuda-runtime-cu11==11.7.99
+nvidia-cudnn-cu11==8.5.0.96
+pandas==1.5.3
+regex==2022.10.31
+scikit-learn==1.2.2
+scipy==1.9.3
+sentence-transformers==2.2.2
+sentencepiece==0.1.97
+tokenizers==0.13.2
+torch==1.12.1
+torchvision==0.13.1+cu113
+transformers==4.27.2
