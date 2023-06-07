@@ -6,7 +6,7 @@ defaultConfig:
   stderr: false
   stdout: true                # only collect stdout
   labelSelector:
-    app: nginx                # choose containers with this label
+    name: sreworks-appmanager-server                # choose containers with this label
   processors:
   - Type: processor_regex       # structure log
     SourceKey: content
@@ -24,10 +24,10 @@ defaultConfig:
     - http_user_agent
     - http_x_forwarded_for
   flusher:
-    Type: flusher_kafka
+    Type: flusher_kafka_v2
     Brokers:
     - prod-dataops-kafka.sreworks-dataops:9092
-    Topic: error-log
+    Topic: pod-log
 
 configs:
   nginx_stdout:
