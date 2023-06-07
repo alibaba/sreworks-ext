@@ -1,0 +1,11 @@
+description: iLogtail
+home: https://github.com/alibaba/sreworks-ext
+icon: https://sreworks.oss-cn-beijing.aliyuncs.com/logo/logo.png
+dependencies:
+maintainers:
+- email: dataops@service.alibaba.com
+  name: sreworks
+name: ilogtail
+sources:
+- https://github.com/alibaba/sreworks-ext.git
+version: 0.0.1
