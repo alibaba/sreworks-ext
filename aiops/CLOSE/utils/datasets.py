@@ -1,19 +1,3 @@
-##
-# 
-#Copyright (c) 2023, Alibaba Group;
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
-
-#   http://www.apache.org/licenses/LICENSE-2.0
-
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
-#
-
 import re
 import time
 import pandas as pd
@@ -24,6 +8,7 @@ import random
 from utils.preprocess import *
 from torch.utils.data import Dataset
 from collections import OrderedDict
+from sentence_transformers import InputExample
 
 benchmark_settings = {
     'HDFS': {
@@ -156,8 +141,6 @@ benchmark_settings = {
 }
 
 def generate_logformat_regex(logformat):
-    """ Function to generate regular expression to split log messages
-    """
     headers = []
     splitters = re.split(r'(<[^<>]+>)', logformat)
     # print(splitters)
@@ -175,8 +158,6 @@ def generate_logformat_regex(logformat):
 
 
 def log_to_dataframe(log_file, regex, headers, logformat, max_len=10000000):
-    """ Function to transform log file to dataframe 
-    """
     log_messages = []
     linecount = 0
     with open(log_file, 'r', errors='ignore') as fin:
@@ -197,12 +178,6 @@ def log_to_dataframe(log_file, regex, headers, logformat, max_len=10000000):
     return logdf
 
 def load_train_log(test_log_type=None,benchmark_settings={}):
-    """
-        加载日志数据
-        return 
-    """
-    print("正在加载日志数据...")
-    start_time = int(time.time())
 
     df_log = None
 
@@ -210,7 +185,6 @@ def load_train_log(test_log_type=None,benchmark_settings={}):
         if log_type != test_log_type:
             log_format = benchmark_settings[log_type]['log_format']
 
-            # 加载dataframe类型的日志数据
             headers, regex = generate_logformat_regex(log_format)
             df_data = log_to_dataframe(os.path.join("./logs/"+log_type+"/", log_type+"_2k.log"), regex, headers, log_format)
             
@@ -223,25 +197,17 @@ def load_train_log(test_log_type=None,benchmark_settings={}):
                 # df_log.append(df_data['Content'])
                 df_log = pd.concat([df_log,df_data['Content']], ignore_index=True)
 
-        # 生成日志语料库的list
         
         # for idx, line in df_log.iterrows():
         #     # log_temp = line['Level']+' '+line['Component'] +': '+line['Content']
         #     log_temp = line['Content']
         #     # corpus.append(log_temp.lower())
         #     corpus.append(log_temp)
-    end_time = int(time.time())
-    print("加载日志数据耗时%s秒" % (end_time-start_time))
 
     return df_log
 
 def load_test_log(log_type,benchmark_settings):
-    """log_type is choice of: Andriod Apache BGL HDFS HPC Hadoop HealthApp Linux Mac OpenSSH OpenStack Proxifier Spark Thunderbird Windows Zookeeper
-        加载日志数据
-        return 
-    """
-    print("正在加载日志数据...")
-    start_time = int(time.time())
+
     # if log_type=="HDFS":
     #     log_format = '<Date> <Time> <Pid> <Level> <Component>: <Content>'
     # elif log_type=="Windows":
@@ -251,14 +217,12 @@ def load_test_log(log_type,benchmark_settings):
 
     log_format = benchmark_settings[log_type]['log_format']
 
-    # 加载dataframe类型的日志数据
     headers, regex = generate_logformat_regex(log_format)
     df_log = log_to_dataframe(os.path.join("./logs/"+log_type+"/", log_type+"_2k.log"), regex, headers, log_format)
     
     log_rex = benchmark_settings[log_type]['regex']
     df_log['Content'] = df_log['Content'].apply(lambda x : (add_var_token(log_rex,x)))
 
-    # 生成日志语料库的list
     corpus = []
     for idx, line in df_log.iterrows():
         # log_temp = line['Level']+' '+line['Component'] +': '+line['Content']
@@ -266,8 +230,6 @@ def load_test_log(log_type,benchmark_settings):
         # corpus.append(log_temp.lower())
 
         corpus.append(temp_log)
-    end_time = int(time.time())
-    print("加载日志数据耗时%s秒" % (end_time-start_time))
 
     # log_rex = benchmark_settings[log_type]['regex']
     # corpus = [add_var_token(log_rex,s) for s in corpus]
@@ -276,17 +238,11 @@ def load_test_log(log_type,benchmark_settings):
 
 
 def generate_positive_samples(test_log_type=None, benchmark_settings=None):
-    """
-        生成postive pair，每个positive piar为同一模版下的日志对
-    """
-    print("正在生成positive corpus...")
-    start_time = int(time.time())
+
     positive_samples = {}
 
     for log_type in benchmark_settings:
-        if log_type != test_log_type and log_type!='Flink' and log_type!='ODPS':
-            # df_log_structured = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_structured.csv")
-            # df_log_template = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_templates.csv")
+        if log_type != test_log_type and log_type!='industrial1' and log_type!='industrial2':
             
             df_log_structured = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_structured.csv")
             df_log_template = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_templates.csv")
@@ -321,10 +277,10 @@ def generate_positive_samples(test_log_type=None, benchmark_settings=None):
 
             positive_samples[log_type] = samples
             
-    if test_log_type=='Flink' or test_log_type=='ODPS':
+    if test_log_type=='industrial1' or test_log_type=='industrial2':
         
-        log_type = 'Flink' if test_log_type=='ODPS' else 'ODPS'
-        print("Loading",log_type,"positive pairs...")
+        log_type = 'industrial1' if test_log_type=='industrial2' else 'industrial2'
+        # print("Loading",log_type,"positive pairs...")
         
         log_path = './'+log_type.lower()+'_test.csv'
         df_log = pd.read_csv(log_path)
@@ -358,7 +314,7 @@ def generate_positive_samples(test_log_type=None, benchmark_settings=None):
         positive_samples[log_type] = samples
 
     positive_corpus = []
-    # 关键
+
     all_event = OrderedDict()
 
     for d in positive_samples:
@@ -369,18 +325,11 @@ def generate_positive_samples(test_log_type=None, benchmark_settings=None):
             # print(i)
                 positive_corpus.append(pairs)
     
-    end_time = int(time.time())
-    print("生成positive corpus耗时%s秒" % (end_time-start_time))
-
     return positive_corpus, all_event, positive_samples
 
 
 def generate_neutral_samples(test_log_type=None, positive_corpus=[], benchmark_settings={}):
-    """
-        生成neutral pair，每个neutral pair为同一个系统，不同模版下的日志对
-    """
-    print("正在生成neutral corpus...")
-    start_time = int(time.time())
+
     # dataset_corpus = []
     neutral_corpus = set()
 
@@ -445,17 +394,10 @@ def generate_neutral_samples(test_log_type=None, positive_corpus=[], benchmark_s
                     if count>=subsub_nums:
                             break
 
-    end_time = int(time.time())
-    print("生成neutral corpus耗时%s秒" % (end_time-start_time))
-
     return list(neutral_corpus)
 
 def generate_negetive_samples(test_log_type=None, positive_corpus=[], neutral_corpus=[], benchmark_settings={}):
-    """
-        生成negetive pair，每个negetuve pair为不同系统下的日志对
-    """
-    print("正在生成negetive corpus...")
-    start_time = int(time.time())
+
     # df_log = None
     all_dataset = []
 
@@ -523,16 +465,9 @@ def generate_negetive_samples(test_log_type=None, positive_corpus=[], neutral_co
                 random.shuffle(pair1_corpus)
                 random.shuffle(pair2_corpus)
 
-    end_time = int(time.time())
-    print("生成negetive corpus耗时%s秒" % (end_time-start_time))
     return list(negetive_corpus)
 
 def generate_contrastive_samples(positive_samples, all_event, batch_size, max_len=100000):
-    """
-        生成对比学习的正负例样本，正例由postive pair构建，负例由batch内的其他log构建。保证一个batch内同一模版下的positive pair只出现一次
-    """
-    print("正在生成contrastive corpus...")
-    start_time = int(time.time())
 
     remain_event = all_event
 
@@ -561,24 +496,15 @@ def generate_contrastive_samples(positive_samples, all_event, batch_size, max_le
         if len(contrastive_corpus)>=max_len:
             break
 
-
-    end_time = int(time.time())
-    print("生成contrastive corpus耗时%s秒" % (end_time-start_time))
-
     return contrastive_corpus
 
-def generate_contrastive_samples_new(positive_samples, all_event, batch_size, max_len=100000):
-    """
-    """
-    print("正在生成contrastive corpus...")
-    start_time = int(time.time())
+def generate_contrastive_samples2(positive_samples, all_event, batch_size, max_len=100000):
 
     contrastive_corpus = []
 
     max_len = max_len
     
     event_list = list(all_event.keys())
-    # 按顺序循环取positive_pair,记录index
     positive_index = dict.fromkeys(event_list,0)
     
     random.seed(42)
@@ -597,16 +523,9 @@ def generate_contrastive_samples_new(positive_samples, all_event, batch_size, ma
             if len(contrastive_corpus)>=max_len:
                 break
 
-    end_time = int(time.time())
-    print("生成contrastive corpus耗时%s秒" % (end_time-start_time))
-
     return contrastive_corpus
 
 def industry_positive_samples(log_path,batch_size):
-    """生成工业数据集的日志对
-    """
-    print("正在生成positive corpus...")
-    start_time = int(time.time())
 
     df_log = pd.read_csv(log_path)
     df_labeled = df_log[df_log['label_id']!=-1]
@@ -663,21 +582,15 @@ def industry_positive_samples(log_path,batch_size):
             # print(i)
                 positive_corpus.append(pairs)
 
-    end_time = int(time.time())
-    print("生成positive corpus耗时%s秒" % (end_time-start_time))
-
     return positive_corpus, all_event, positive_samples
 
 def load_event_log(test_log_type=None, benchmark_settings=None, model=None):
-    """
-        加载日志数据，并生成log token->event id的映射，用于后续查找log对应的center
-    """
 
     all_event_log = {}
     log_to_event = {}
 
     for log_type in benchmark_settings:
-        if log_type != test_log_type and log_type!='Flink' and log_type!='ODPS':
+        if log_type != test_log_type and log_type!='industrial1' and log_type!='industrial2':
         # if log_type == 'HPC':
             df_log_structured = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_structured.csv")
             df_log_template = pd.read_csv("./logs/"+log_type+"/"+log_type+"_2k.log_templates.csv")
@@ -713,9 +626,9 @@ def load_event_log(test_log_type=None, benchmark_settings=None, model=None):
                     #     log_token = log_token[log_token!=0]
                     #     log_to_event[tuple(log_token.tolist())] = event_id
 
-    if test_log_type=='Flink' or test_log_type=='ODPS':
+    if test_log_type=='industrial1' or test_log_type=='industrial2':
     
-        log_type = 'Flink' if test_log_type=='ODPS' else 'ODPS'
+        log_type = 'industrial1' if test_log_type=='industrial2' else 'industrial2'
         print("Loading",log_type,"event...")
         
         log_path = './'+log_type.lower()+'_test.csv'
@@ -769,176 +682,7 @@ def load_event_log_industrial(log_path,model=None):
     
     return all_event_log, log_to_event
 
-def load_hadoop_log(log_file,benchmark_settings):
-    """
-        读取原始的Hadoop日志文件，划分为训练集和测试集，用于异常检测
-    """
-    log_class = {
-        'WordCount':{
-            'Normal':['application_1445087491445_0005','application_1445087491445_0007','application_1445175094696_0005'],
-            'Machine down':['application_1445087491445_0001','application_1445087491445_0002','application_1445087491445_0003'],
-            'Network disconnection':['application_1445175094696_0001','application_1445175094696_0002','application_1445175094696_0003'],
-            'Disk full':['application_1445182159119_0001','application_1445182159119_0002','application_1445182159119_0003']
-        },
-        'PageRank':{
-            'Normal':['application_1445062781478_0011','application_1445062781478_0016','application_1445062781478_0019'],
-            'Machine down':['application_1445062781478_0012','application_1445062781478_0013','application_1445062781478_0014'],
-            'Network disconnection':['application_1445144423722_0020','application_1445144423722_0022','application_1445144423722_0023'],
-            'Disk full':['application_1445182159119_0011','application_1445182159119_0013','application_1445182159119_0014']
-        }
-    }
-
-    log_format = benchmark_settings['Hadoop']['log_format']
-
-    headers, regex = generate_logformat_regex(log_format)
-
-    df_log = None
-
-    for app in log_class:
-        for status in log_class[app]:
-            for file_name in log_class[app][status]:
-                # print(os.listdir(log_file+'/'+file_name))
-                for log_name in [i for i in os.listdir(log_file+'/'+file_name) if not i.startswith("._")]:
-                    # print(os.path.join(log_file+'/'+file_name+'/'+log_name))
-                    df_data = log_to_dataframe(os.path.join(log_file,file_name,log_name), regex, headers, log_format)
-                    if status=='Normal':
-                        df_data['Label'] = 0
-                    else:
-                        df_data['Label'] = 1
-
-                    if df_log is None:
-                        df_log = df_data[['Content','Label']]
-                    else:
-                        df_log = pd.concat([df_log,df_data[['Content','Label']]], ignore_index=True)
-
-    log_rex = benchmark_settings['Hadoop']['regex']
-    df_log['Content'] = df_log['Content'].apply(lambda x : add_var_token(log_rex,x))
-
-    df_normal = df_log[df_log['Label']==0]
-    df_abnormal = df_log[df_log['Label']==1]
-
-    # print('Normal dataset: ',df_normal.shape)
-    # print('Abnormal dataset',df_abnormal.shape)
-
-    df_train = pd.concat([df_normal.iloc[:10000],df_abnormal.iloc[:10000]], ignore_index=True)
-    df_train = df_train.sample(frac=1.0, random_state=42)
-
-
-    df_test = pd.concat([df_normal.iloc[10000:13000],df_abnormal.iloc[10000:13000]],ignore_index=True)
-
-    print('Train dataset: ',df_train.shape)
-    print('Test dataset: ',df_test.shape)
-
-    return df_train,df_test
-
-def load_bgl_log(log_file,benchmark_settings):
-    """
-        读取原始的BGL日志文件，按NuLog论文中的方式划分为训练集和测试集，用于异常检测
-    """
-    log_format = benchmark_settings['BGL']['log_format']
-
-    headers, regex = generate_logformat_regex(log_format)
-
-    df_data = log_to_dataframe(os.path.join(log_file), regex, headers, log_format)
-
-    df_log = df_data[['Content','Label']]
-
-    log_rex = benchmark_settings['BGL']['regex']
-    df_log['Content'] = df_log['Content'].apply(lambda x : add_var_token(log_rex,x))
-    df_log['Label'] = df_log['Label'].apply(lambda x: 0 if x=='-' else 1)
-
-    evaluate_len = int(len(df_log))
-    
-    df_train = df_log.iloc[:int(evaluate_len*0.8)]
-    df_test = df_log.iloc[int(evaluate_len*0.8):evaluate_len]
-
-    
-    df_train = df_train.sample(frac=1.0, random_state=42)
-
-    print('Normal dataset: ',df_train[df_train['Label']==0].shape)
-    print('Abnormal dataset: ',df_train[df_train['Label']==1].shape)
-
-    print('Train dataset: ',df_train.shape)
-    print('Test dataset: ',df_test.shape)
-
-    return df_train,df_test
-
-def create_thunderbird_10m(log_file):
-
-    linecount = 0
-    max_len = 10000000
-
-    with open(log_file, 'r', errors='ignore') as fin:
-        with open('Thunderbird_10M.log','w') as n:
-            for line in fin.readlines():
-                n.writelines(line)
-                linecount += 1
-                if linecount>=max_len:
-                    print("The number of lines of logs exceeds ",max_len)
-                    break
-    
-    return
-
-def load_thunderbird_log(log_file,benchmark_settings):
-    """
-        读取原始的Thunderbird日志文件，取部分前面部分划分为训练集和测试集，用于异常检测
-    """
-    log_format = benchmark_settings['Thunderbird']['log_format']
-
-    headers, regex = generate_logformat_regex(log_format)
-
-    df_data = log_to_dataframe(os.path.join(log_file), regex, headers, log_format)
-
-    df_log = df_data[['Content','Label']]
-
-    log_rex = benchmark_settings['Thunderbird']['regex']
-    df_log['Content'] = df_log['Content'].apply(lambda x : add_var_token(log_rex,x))
-    df_log['Label'] = df_log['Label'].apply(lambda x: 0 if x=='-' else 1)
-
-    # print(df_log)
-    # print(df_log.shape)
-
-    print('Normal dataset: ',df_log[df_log['Label']==0].shape)
-    print('Abnormal dataset: ',df_log[df_log['Label']==1].shape)
-
-    evaluate_len = int(len(df_log))
-
-    df_train = df_log.iloc[:int(evaluate_len*0.8)]
-    df_test = df_log.iloc[int(evaluate_len*0.8):evaluate_len]
-
-    df_train = df_train.sample(frac=1.0, random_state=42)
-
-    print('Normal dataset: ',df_train[df_train['Label']==0].shape)
-    print('Abnormal dataset: ',df_train[df_train['Label']==1].shape)
-
-    print('Train dataset: ',df_train.shape)
-    print('Test dataset: ',df_test.shape)
-
-    return df_train,df_test
-
-class Log_Dataset(Dataset):
-    def __init__(self,df_train) -> None:
-
-        # df_noraml = df_noraml.sample(frac=1.0, random_state=42)
-        # df_abnormal = df_abnormal.sample(frac=1.0, random_state=42)
-
-        # df_log = pd.concat([df_normal.iloc[:10000],df_abnormal.iloc[:10000]], ignore_index=True)
-        # df_log = df_log.sample(frac=1.0, random_state=42)
-
-        self.data = df_train
-
-    def __getitem__(self, index):
-        return self.data['Content'].iloc[index],self.data['Label'].iloc[index]
-
-    def __len__(self):
-        return len(self.data)
-
 def load_industry_log(file_path):
-    """加载日志数据
-    return:
-        df:完整的日志数据集
-        corpus:带标签的日志数据
-    """
 
     df_log = pd.read_csv(file_path)
     df_labeled = df_log[df_log['label_id']!=-1]
@@ -969,3 +713,41 @@ def load_industry_log(file_path):
     #     print(line["sample"])
 
     return df_log, corpus
+
+def generate_samples(sample_len,test_log_type,batch_size):
+    
+    positive_corpus, all_event, positive_samples = generate_positive_samples(test_log_type=test_log_type,benchmark_settings=benchmark_settings)
+    contrastive_corpus = generate_contrastive_samples(positive_samples,all_event,batch_size,max_len=sample_len)
+
+    random_index = [i for i in range(len(contrastive_corpus)//batch_size)]
+
+    random.shuffle(random_index)
+
+    train_corpus = []
+
+    for i in random_index:
+        train_corpus.append(contrastive_corpus[i*batch_size:i*batch_size+batch_size])
+
+    train_examples = []
+    for batch_corpus in train_corpus:
+        for pairs in batch_corpus:
+            train_examples.append(InputExample(texts=list(pairs)))
+            
+    return train_examples
+
+class Log_Dataset(Dataset):
+    def __init__(self,df_train) -> None:
+
+        # df_noraml = df_noraml.sample(frac=1.0, random_state=42)
+        # df_abnormal = df_abnormal.sample(frac=1.0, random_state=42)
+
+        # df_log = pd.concat([df_normal.iloc[:10000],df_abnormal.iloc[:10000]], ignore_index=True)
+        # df_log = df_log.sample(frac=1.0, random_state=42)
+
+        self.data = df_train
+
+    def __getitem__(self, index):
+        return self.data['Content'].iloc[index],self.data['Label'].iloc[index]
+
+    def __len__(self):
+        return len(self.data)

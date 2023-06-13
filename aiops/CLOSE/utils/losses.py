@@ -1,19 +1,3 @@
-##
-# 
-#Copyright (c) 2023, Alibaba Group;
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
-
-#   http://www.apache.org/licenses/LICENSE-2.0
-
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
-#
-
 import torch.nn as nn
 from sentence_transformers import SentenceTransformer, util
 from torch import Tensor
@@ -21,9 +5,6 @@ from typing import Iterable, Dict
 import torch
 
 def calculate_center(model,all_event_log):
-    """
-        计算每个日志模版下的聚类中心
-    """
 
     event_center = {}
 
@@ -45,7 +26,7 @@ class MNR_Hyper_Loss(nn.Module):
     def __init__(self, model: SentenceTransformer, scale: float = 20, similarity_fct = util.cos_sim, hyper_ratio = 0.01, log_to_event={}, event_center={}):
         super(MNR_Hyper_Loss, self).__init__()
         self.model = model
-        self.scale = scale # 影响聚类簇的“密集度”，值大时较紧凑（同质），值小时较松散（完整）
+        self.scale = scale 
         self.similarity_fct = similarity_fct
         self.cross_entropy_loss = nn.CrossEntropyLoss()
         self.mse_loss = nn.MSELoss()
@@ -55,7 +36,6 @@ class MNR_Hyper_Loss(nn.Module):
 
 
     def forward(self, sentence_features: Iterable[Dict[str, Tensor]], labels: Tensor):
-        # print("sentence_features:",len(sentence_features))
         # print(sentence_features)
         reps = [self.model(sentence_feature)['sentence_embedding'] for sentence_feature in sentence_features]
         # print("reps:",len(reps))
@@ -66,7 +46,7 @@ class MNR_Hyper_Loss(nn.Module):
 
         scores = self.similarity_fct(embeddings_a, embeddings_b) * self.scale #(b,b)
         # print("scores:",scores.size())
-        MNR_labels = torch.tensor(range(len(scores)), dtype=torch.long, device=scores.device)  # Example a[i] should match with b[i]
+        MNR_labels = torch.tensor(range(len(scores)), dtype=torch.long, device=scores.device) 
         
         MNR_loss = self.cross_entropy_loss(scores, MNR_labels)
 

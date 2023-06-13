@@ -1,23 +1,7 @@
-##
-# 
-#Copyright (c) 2023, Alibaba Group;
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
-
-#   http://www.apache.org/licenses/LICENSE-2.0
-
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
-#
-
 import torch
 import numpy as np
 import random
-from sentence_transformers import SentenceTransformer, InputExample
+from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
 from utils.datasets import *
 from utils.losses import *
@@ -37,35 +21,13 @@ batch_size = 20
 
 evaluate_score = []
 
-def generate_samples(sample_len,test_log_type):
-    
-    positive_corpus, all_event, positive_samples = generate_positive_samples(test_log_type=test_log_type,benchmark_settings=benchmark_settings)
-    contrastive_corpus = generate_contrastive_samples(positive_samples,all_event,batch_size,max_len=sample_len)
-
-    random_index = [i for i in range(len(contrastive_corpus)//batch_size)]
-
-    random.shuffle(random_index)
-
-    train_corpus = []
-
-    for i in random_index:
-        train_corpus.append(contrastive_corpus[i*batch_size:i*batch_size+batch_size])
-
-    train_examples = []
-    for batch_corpus in train_corpus:
-        for pairs in batch_corpus:
-            train_examples.append(InputExample(texts=list(pairs)))
-            
-    return train_examples
-
-
 for test_name in benchmark_settings:
     print("Test dataset: ", test_name)
     test_log_type = test_name
 
     train_len = 20000
     
-    train_examples = generate_samples(train_len,test_log_type)
+    train_examples = generate_samples(train_len,test_log_type,batch_size)
 
     print("Train sentence pairs: ",len(train_examples))
 
@@ -99,11 +61,11 @@ for test_name in benchmark_settings:
     corpus_embeddings = generate_embeddings(model,test_corpus)
     
     distance_threshold = benchmark_settings[test_log_type]['distance_threshold']
-    # print("distance_threshold: ",distance_threshold)
+    
     clustered_sentences, cluster_assignment = embeddings_clustering(test_corpus, corpus_embeddings, distance_threshold)
     score, event_amount, cluster_amount = clustering_evaluate(test_log_type, cluster_assignment, clustered_sentences)
+    
     score['dataset'] = test_log_type
-    score['distance'] = distance_threshold
     score['event amount'] = event_amount
     score['cluster amount'] = cluster_amount
 

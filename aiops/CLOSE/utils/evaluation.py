@@ -1,19 +1,3 @@
-##
-# 
-#Copyright (c) 2023, Alibaba Group;
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
-
-#   http://www.apache.org/licenses/LICENSE-2.0
-
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
-#
-
 from sklearn import metrics
 from sklearn.cluster import AgglomerativeClustering
 import torch
@@ -23,11 +7,6 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 def generate_embeddings(model,corpus):
-    """加载预训练模型，并对日志生成embedding
-    """
-    print("正在加载预训练模型...")
-    # 加载模型
-    start_time = int(time.time())
 
     #Mean Pooling - Take average of all tokens
     def mean_pooling(model_output, attention_mask):
@@ -56,26 +35,18 @@ def generate_embeddings(model,corpus):
 
     # embedder = SentenceTransformer(model_name)
     # print(embedder)
-    end_time = int(time.time())
-    print("加载预训练模型耗时%s秒" % (end_time-start_time))
 
-    print("正在生成日志Embedding...")
-    lower_corpus = [s.lower() for s in corpus] # 日志全部转化为小写，方便后续的分词
+    lower_corpus = [s.lower() for s in corpus]
     # 生成日志embedding
     start_time = int(time.time())
     # corpus_embeddings = embedder.encode(lower_corpus)
     corpus_embeddings = model.encode(lower_corpus,normalize_embeddings=True)
     # Normalize the embeddings to unit length
     # corpus_embeddings = corpus_embeddings /  np.linalg.norm(corpus_embeddings, axis=1, keepdims=True)
-    end_time = int(time.time())
-    print("日志Embedding生成耗时%s秒" % (end_time-start_time))
+
     return corpus_embeddings
 
 def embeddings_clustering(corpus, corpus_embeddings, distance_threshold=0.1):
-    """对embedding进行聚类
-    """
-    print("正在进行日志Embedding聚类...")
-    start_time = int(time.time())
 
     def compute_dot_similarity(a):
         score = a.dot(a.transpose(1,0)) #(b,n)*(n*b)
@@ -92,24 +63,10 @@ def embeddings_clustering(corpus, corpus_embeddings, distance_threshold=0.1):
 
         clustered_sentences[cluster_id].append(corpus[sentence_id])
 
-    end_time = int(time.time())
-    print("日志Embedding聚类耗时%s秒" % (end_time-start_time))
 
     return clustered_sentences, cluster_assignment
 
 def clustering_evaluate(log_type, cluster_assignment, clustered_sentences):
-    """计算日志聚类效果评价指标
-    
-        评价指标包含：
-        rand_index
-        homogeneity
-        completeness
-        v measure
-        parsing_accuarcy
-    """
-
-    print("正在进行日志聚类效果评估...")
-    start_time = int(time.time())
     
     label_true = []
     
@@ -146,10 +103,10 @@ def clustering_evaluate(log_type, cluster_assignment, clustered_sentences):
     adj_rand_index = metrics.adjusted_rand_score(label_true, cluster_assignment)
     normalized_mi = metrics.normalized_mutual_info_score(label_true, cluster_assignment)
     
-    print("rand_index: ",rand_index)
-    print('homogeneity score: ',homogeneity) 
-    print('completeness score: ',completeness) 
-    print('v measure score: ',v_measure)
+    # print("rand_index: ",rand_index)
+    # print('homogeneity score: ',homogeneity) 
+    # print('completeness score: ',completeness) 
+    # print('v measure score: ',v_measure)
     print('ARI',adj_rand_index)
     print('NMI',normalized_mi)
 
@@ -192,26 +149,11 @@ def clustering_evaluate(log_type, cluster_assignment, clustered_sentences):
     score['v measure'] = v_measure
     score['ARI'] = adj_rand_index
     score['NMI'] = normalized_mi
-    # score['f1 score'] = F1_measure
-
-    end_time = int(time.time())
-    print("日志聚类效果评估耗时%s秒" % (end_time-start_time))
 
     return score, event_amount, cluster_amount
 
 def clustering_evaluate_industry(file_name, cluster_assignment, clustered_sentences):
-    """计算日志聚类效果评价指标
-    
-        评价指标包含：
-        rand_index
-        homogeneity
-        completeness
-        v measure
-        parsing_accuarcy
-    """
 
-    print("正在进行日志聚类效果评估...")
-    start_time = int(time.time())
     df_log = pd.read_csv(file_name)
     # df_groundtruth = df_log_structured['EventId']
     df_log = df_log[df_log['label_id']!=-1]
@@ -234,10 +176,10 @@ def clustering_evaluate_industry(file_name, cluster_assignment, clustered_senten
     adj_rand_index = metrics.adjusted_rand_score(label_true, cluster_assignment)
     normalized_mi = metrics.normalized_mutual_info_score(label_true, cluster_assignment)
     
-    print("rand_index: ",rand_index)
-    print('homogeneity score: ',homogeneity) 
-    print('completeness score: ',completeness) 
-    print('v measure score: ',v_measure)
+    # print("rand_index: ",rand_index)
+    # print('homogeneity score: ',homogeneity) 
+    # print('completeness score: ',completeness) 
+    # print('v measure score: ',v_measure)
     print('ARI',adj_rand_index)
     print('NMI',normalized_mi)
 
@@ -277,18 +219,5 @@ def clustering_evaluate_industry(file_name, cluster_assignment, clustered_senten
     score['v measure'] = v_measure
     score['ARI'] = adj_rand_index
     score['NMI'] = normalized_mi
-    # score['f1 score'] = F1_measure
-
-    end_time = int(time.time())
-    print("日志聚类效果评估耗时%s秒" % (end_time-start_time))
 
     return score, event_amount, cluster_amount
-
-def log_tokenize(model_name, log):
-    embedder = SentenceTransformer(model_name)
-    tz = embedder.tokenizer
-    log_token = tz.tokenize(log.lower())
-    print("原始日志: ", log)
-    print("分词结果: ", log_token)
-
-    return 
