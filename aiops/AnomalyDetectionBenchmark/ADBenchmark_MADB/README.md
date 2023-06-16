@@ -36,3 +36,5 @@ Introduction of Benchmark
 *The scripts for each dataset are also included.
 
 *For results details, see our paper "Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets".
+
+*The HOLOgres Datasets are on https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip . For each instance, a csv file is given. The train dataset and test dataset in each instance should be split evenly through all the timestamps.
