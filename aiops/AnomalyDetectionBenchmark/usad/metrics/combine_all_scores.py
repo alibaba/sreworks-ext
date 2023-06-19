@@ -1,0 +1,94 @@
+from .f1_score_f1_pa import *
+from .fc_score import *
+from .precision_at_k import *
+from .customizable_f1_score import *
+from .AUC import *
+from .Matthews_correlation_coefficient import *
+from .affiliation.generics import convert_vector_to_events
+from .affiliation.metrics import pr_from_events
+from .vus.models.feature import Window
+from .vus.metrics import get_range_vus_roc
+from decimal import Decimal
+
+
+
+def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, modelname):
+    events_gt = convert_vector_to_events(y_test) # [(4, 5), (8, 9)]
+    events_pred = convert_vector_to_events(pred_labels)     # [(3, 4), (7, 10)]
+    TP = np.sum(pred_labels * y_test)
+    TN = np.sum((1 - pred_labels) * (1 - y_test))
+    FP = np.sum(pred_labels * (1 - y_test))
+    FN = np.sum((1 - pred_labels) * y_test)
+    print('TP,TN,FP,FN')
+    print(TP,TN,FP,FN)
+    Trange = (0, len(y_test))
+    affiliation = pr_from_events(events_pred, events_gt, Trange)
+    # affiliation = pr_from_events(events_gt, events_pred, Trange)
+    print('affiliation',affiliation['precision'],affiliation['recall'])
+    true_events = get_events(y_test)
+    _, _, _, f1_score_ori, f05_score_ori = get_accuracy_precision_recall_fscore(y_test, pred_labels)
+    print('f1_score_ori, f05_score_ori',f1_score_ori, f05_score_ori)
+    f1_score_pa = get_point_adjust_scores(y_test, pred_labels, true_events)[5]
+    pa_accuracy, pa_precision, pa_recall, pa_f_score = get_adjust_F1PA(pred_labels, y_test)
+    range_f_score = customizable_f1_score(y_test, pred_labels)
+    _, _, f1_score_c = get_composite_fscore_raw(y_test, pred_labels,  true_events, return_prec_rec=True)
+    precision_k = precision_at_k(y_test, anomaly_scores, pred_labels)
+    if not isinstance(precision_k,float):
+        precision_k = precision_k[0]
+    print('precision_k',precision_k)
+    point_auc = point_wise_AUC(anomaly_scores, y_test)
+    range_auc = Range_AUC(anomaly_scores, y_test)
+    MCC_score = MCC(y_test, pred_labels)
+    print('MCC_score',MCC_score)
+    results = get_range_vus_roc(anomaly_scores, y_test, 100) # slidingWindow = 100 default
+
+
+    score_list = {
+        "model": modelname,
+        "Affiliation precision": affiliation['precision'],
+        "Affiliation recall": affiliation['recall'],
+        "MCC_score": MCC_score,
+        "R_AUC_PR": results["R_AUC_PR"],
+        "R_AUC_ROC": results["R_AUC_ROC"],
+        "VUS_PR": results["VUS_PR"],
+        "VUS_ROC": results["VUS_ROC"],
+        "f05_score_ori": f05_score_ori,
+        "f1_score_c": f1_score_c,
+        "f1_score_ori": f1_score_ori,
+        "f1_score_pa": f1_score_pa,
+        "pa_accuracy":pa_accuracy,
+        "pa_f_score": pa_f_score,
+        "pa_precision":pa_precision,
+        "pa_recall":pa_recall,
+        "point_auc": point_auc,
+        "precision_k": precision_k,
+        "range_auc": range_auc,
+        "range_f_score": range_f_score,
+    }
+    for key in score_list.keys():
+        if key == "model":
+            continue
+        score_list[key] = float(Decimal(score_list[key]).quantize(Decimal("0.0001"),rounding = "ROUND_HALF_UP"))
+    return score_list
+
+
+def main():
+    y_test = np.zeros(100)
+    y_test[10:20] = 1
+    y_test[50:60] = 1
+    pred_labels = np.zeros(100)
+    pred_labels[15:17] = 1
+    pred_labels[55:62] = 1
+    anomaly_scores = np.zeros(100)
+    anomaly_scores[15:17] = 0.7
+    anomaly_scores[55:62] = 0.6
+    pred_labels[51:55] = 1
+    true_events = get_events(y_test)
+    scores = combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores)
+    # scores = test(y_test, pred_labels)
+    for key,value in scores.items():
+        print(key,' : ',value)
+
+    
+if __name__ == "__main__":
+    main()
