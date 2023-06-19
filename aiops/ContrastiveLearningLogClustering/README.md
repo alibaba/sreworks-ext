@@ -1,0 +1,1 @@
+CLOSE is a contrastive learning based log clustering framework.
