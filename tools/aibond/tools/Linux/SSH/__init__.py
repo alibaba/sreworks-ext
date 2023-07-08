@@ -28,5 +28,3 @@ def ssh(command:str, host: str, username: str = "root", password: str = None) ->
 
 
 
-#a = ssh("ls", '8.130.35.2', 'root')
-#print(a)
