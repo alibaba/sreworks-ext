@@ -42,8 +42,8 @@ class AI():
               return exec_func(**sub_args)
       class_tool_template.__name__ = class_tool.__name__
       class_tool_template.__doc__ = class_tool.__doc__
-      class_tool_template.__doc__ += " This tool that requires instantiation. You can first call the '__init__' sub_func to instantiate, this call will return an 'instance_id'. Subsequently, you can use this 'instance_id' to continue operating on this instance.\n"
-      class_tool_template.__doc__ += "    Below are the available sub_funcs for this tool:\n"
+      class_tool_template.__doc__ += " The use of this tool is similar to a class, it requires initialization. You can use this tool by following these steps: First, call the '__init__' sub_func to instantiate, this call will return an 'instance_id'. Then, use sub_func=...,sub_args=...,instance_id=... to call the other functions on this instance.\n"
+      class_tool_template.__doc__ += "    Below are the available sub_func list for this tool:\n"
       
       functions = [member for member in inspect.getmembers(class_tool, inspect.isfunction) if ((not member[0].startswith('_')) or member[0] == "__init__") ]
       for fn in functions:
