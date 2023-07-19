@@ -30,5 +30,9 @@ class HDFSCluster():
 
         return {"stdout": output_stdout, "stderr": output_stderr, "exitStatus": retcode}
 
+    def get_namenodes(self) -> str:
+        res = self.exec_command("hdfs haadmin -getAllServiceState")
+        return res['stdout']
+
 
 
