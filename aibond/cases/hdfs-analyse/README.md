@@ -1,7 +1,7 @@
 # HDFS集群问题分析排查
 
 ## 使用工具
-- [HDFS](../../tools/MapRedcue/HDFS/)
+- [HDFS](../../tools/MapReduce/HDFS/)
 
 ## 使用方法
 ```
