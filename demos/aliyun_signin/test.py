@@ -73,7 +73,7 @@ def main():
     loginUrl = 'http://www.aliyun.com'
     destination = 'http://sls4service.console.aliyun.com/lognext/project/aliyun-fc-cn-hangzhou-2fb76aac-d3fb-5905-8d37-315bc025cabf/logsearch/function-log?encode%3Dbase64%26queryString%3D%26queryTimeType%3D99%26startTime%3D1691564375%26endTime%3D1691565275'
     print('################### Step 3: 生成登录链接 ####################')
-    signinUrl = genSigninUrl(signinToken, loginUrl, destination)
+    signinUrl = genSigninUrl(signinToken, loginUrl, destination.replace('sls.console.aliyun.com','sls4service.console.aliyun.com'))
     print(signinUrl)
 
 if __name__ == '__main__':
