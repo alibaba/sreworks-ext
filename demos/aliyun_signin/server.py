@@ -80,7 +80,7 @@ class Aliyunsignin(BaseHTTPRequestHandler):
         self.end_headers()
 
 if __name__ == '__main__':
-    port = 8888
+    port = 80
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, Aliyunsignin)
     print(f'Starting server on port {port}...')
