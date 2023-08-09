@@ -87,35 +87,3 @@ if __name__ == '__main__':
     httpd.serve_forever()
 
 
-#def main():
-    # 调用AssumeRole接口的子用户AccessKeyId/Secret
-    #accessKeyId = 'LTAI5tS8iqF1afFy2DrKW5dK'
-    #accessKeySecret = 'ldwLIxUaOSvg5EEuYhIpe9Y1DIm8Ax'
-    # 指定要扮演的角色
-    #roleArn = 'acs:ram::1414912095539868:role/test'
-    #sessionName = 'default'
-
-    #print('################### Step 1: 扮演角色，获取STS Token ####################')
-    #stsToken = getStsToken(accessKeyId, accessKeySecret, roleArn, sessionName)
-    #print(stsToken)
-    #print('')
-
-
-    #print('################### Step 2: 使用STS Token换取控制台Signin Token ####################')
-    #response = getSigninToken(stsToken['Credentials']['AccessKeyId'],
-    #                          stsToken['Credentials']['AccessKeySecret'],
-    #                          stsToken['Credentials']['SecurityToken'])
-    #signinToken = response["SigninToken"]
-    #print(signinToken)
-    #print('')
-
-    # 因为登录页不在阿里云，这里需要指定登录Session失效后，需要调回的登录页
-#    loginUrl = 'http://www.aliyun.com'
-#    destination = 'http://sls4service.console.aliyun.com/lognext/project/aliyun-fc-cn-hangzhou-2fb76aac-d3fb-5905-8d37-315bc025cabf/logsearch/function-log?encode%3Dbase64%26queryString%3D%26queryTimeType%3D99%26startTime%3D1691564375%26endTime%3D1691565275'
-#    print('################### Step 3: 生成登录链接 ####################')
-    #signinUrl = genSigninUrl(signinToken, loginUrl, destination)
-#    print(signinUrl)
-
-#if __name__ == '__main__':
-#    main()
-#
