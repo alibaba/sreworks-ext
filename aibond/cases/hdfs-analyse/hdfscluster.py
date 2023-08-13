@@ -3,6 +3,9 @@
 
 from typing import Dict
 import paramiko
+from paramiko.buffered_pipe import PipeTimeout
+import time
+import socket
 
 class HDFSCluster():
     """This is a class that can operate on an HDFS cluster."""
@@ -15,7 +18,7 @@ class HDFSCluster():
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._client.connect(host, username=username, password=password)
 
-    def exec_command(self, command: str, host: str = None) -> Dict:
+    def exec_command(self, command: str, host: str = None, timeout: int = 5) -> Dict:
         if host == None or self._client_host == host:
             stdin, stdout, stderr = self._client.exec_command(command)
         else:
@@ -23,9 +26,26 @@ class HDFSCluster():
                 host = host.split(":")[0]
             stdin, stdout, stderr = self._client.exec_command("ssh " +  host +  " '" + command + "'")
 
-        retcode  = stdout.channel.recv_exit_status()
-        output_stdout = stdout.read().decode('utf-8')
-        output_stderr = stderr.read().decode('utf-8')
+        stdout.channel.settimeout(timeout)
+        retcode = 999
+       
+        try:  
+            output_stdout = stdout.read().decode('utf-8')
+            output_stderr = stderr.read().decode('utf-8')
+            retcode  = stdout.channel.recv_exit_status()
+        except socket.timeout as e:
+            output_stdout = ""
+            output_stderr = ""
+            while True:
+               try:
+                  output_stdout += stdout.readline() + "\n"
+               except socket.timeout as e:
+                  break
+            while True:
+               try:
+                  output_stderr += stderr.readline() + "\n"
+               except socket.timeout as e:
+                  break
 
         stdin = None
         stdout = None
@@ -38,7 +58,7 @@ class HDFSCluster():
         res = self.exec_command("hdfs haadmin -getAllServiceState")
         return res['stdout']
 
-    def hdfs_touchz(self, path: str) -> str:
+    def hdfs_touchz(self) -> str:
         """Create a test file in HDFS."""
         res = self.exec_command("hdfs dfs -touchz test-file")
         return res
@@ -52,14 +72,14 @@ class HDFSCluster():
     def namenode_log(self, host: str) -> str:
         """get one HDFS cluster namenode's log."""
         res = self.exec_command("cd /mnt/disk1/log/hadoop-hdfs && tail -n 30 hadoop-hdfs-namenode-*.log", host)
-        return res['stdout']
+        return res['stdout'][-2000:]
 
     def get_local_disk_free(self, host: str):
         res = self.exec_command("df", host)
         return res['stdout']
 
 
-#if __name__ == "__main__":
-#    class_instance = HDFSCluster("47.93.25.211")
-#    resp = class_instance.namenode_log("master-1-1.c-e4814c274586e7b4.cn-beijing.emr.aliyuncs.com")
-#    print(resp)
+if __name__ == "__main__":
+    class_instance = HDFSCluster("47.93.25.211")
+    resp = class_instance.hdfs_touchz()
+    print(resp)
