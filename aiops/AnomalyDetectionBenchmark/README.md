@@ -10,7 +10,8 @@ The Hologres Datasets are on [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops
 
 - Illustration of the collection of Hologres AIOps dataset
 
-![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2023/png/2774/1692237459827-ecfc1d30-d743-4300-b7ee-0bc441414452.png#clientId=u49f6f881-b342-4&from=paste&height=659&id=u9a58a57b&originHeight=659&originWidth=868&originalType=binary&ratio=1&rotation=0&showTitle=false&size=59244&status=done&style=none&taskId=u47ff71b2-7403-44b5-b48d-d528a22c97f&title=&width=868)<br />All the metrics and labels in our dataset are derived from real-world scenarios. All metrics were obtained from the Hologres instance monitoring system and cover a rich variety of metric types, including **CPU usage, queries per second (QPS) and latency**, which are related to many important modules within Hologres. We obtain labels from the ticket system, which integrates three main sources of instance anomalies: user service requests, instance unavailability and fault simulations . User service requests refer to tickets that are submitted directly by users, whereas instance unavailability is typically detected through existing monitoring tools or discovered by Site Reliability Engineers (SREs). Since the system is usually very stable, we augment the anomaly samples by conducting fault simulations. Fault simulation refers to a special type of anomaly, planned beforehand, which is introduced to the system to test its performance under extreme conditions. All records in the ticket system are subject to follow-up processing by engineers, who meticulously mark the start and end times of each ticket. This rigorous approach ensures the accuracy of the labels in our dataset. 
+![](img/system_structure.png)
+All the metrics and labels in our dataset are derived from real-world scenarios. All metrics were obtained from the Hologres instance monitoring system and cover a rich variety of metric types, including **CPU usage, queries per second (QPS) and latency**, which are related to many important modules within Hologres. We obtain labels from the ticket system, which integrates three main sources of instance anomalies: user service requests, instance unavailability and fault simulations . User service requests refer to tickets that are submitted directly by users, whereas instance unavailability is typically detected through existing monitoring tools or discovered by Site Reliability Engineers (SREs). Since the system is usually very stable, we augment the anomaly samples by conducting fault simulations. Fault simulation refers to a special type of anomaly, planned beforehand, which is introduced to the system to test its performance under extreme conditions. All records in the ticket system are subject to follow-up processing by engineers, who meticulously mark the start and end times of each ticket. This rigorous approach ensures the accuracy of the labels in our dataset. 
 
 - Statistic Characteristic of Hologres AIOps Datasets
 
@@ -113,8 +114,7 @@ Methods included are shown below:
 
 <a name="tVl84"></a>
 ## 4、Experiments Running（如何通过代码和数据复现结果）
-![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2023/png/57656492/1692265169387-5d9abe5a-c3d6-4458-9e6b-4c1120aa31a2.png#clientId=ufabd7e9e-86ef-4&from=paste&height=421&id=ua1f6e00e&originHeight=841&originWidth=2262&originalType=binary&ratio=2&rotation=0&showTitle=false&size=133940&status=done&style=none&taskId=u8bfdc674-d135-4bdf-b3cb-7d33024107d&title=&width=1131)
-
+![](img/img.png)
 - Download datasets
    - Download our datasets from  [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) , unzip the file and put it in:
 ```dockerfile
