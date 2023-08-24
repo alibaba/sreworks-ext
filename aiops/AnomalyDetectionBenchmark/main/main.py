@@ -28,9 +28,9 @@ args = vars(config)
 
 
 if config.model == 'DCDetector':
-    command = "bash ./model/DCdetector/scripts/MSL.sh"
+    command = "bash ./models/DCdetector/scripts/MSL.sh"
 elif config.model == 'AnomalyTransformer':
-    command = "bash ./model/AnomalyTransformer/scripts/MSL.sh"
+    command = "bash ./models/AnomalyTransformer/scripts/MSL.sh"
 elif config.model == 'ECOD':
     command = "your_command_here"
 elif config.model == 'USAD':
