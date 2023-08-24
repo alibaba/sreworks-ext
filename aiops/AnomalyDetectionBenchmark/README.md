@@ -83,7 +83,7 @@ The Evaluation Metrics we considered are:
 - Volume Under the Surface (VUS) Metric
 
 For more details, see metrics files in：
-```dockerfile
+```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/main/evaluation
 ```
 
@@ -112,37 +112,40 @@ Methods included are shown below:
 - **USAD**
    - **UnSupervised Anomaly Detection (USAD): **USAD is based on adversely trained autoencoders to isolate anomalies while providing fast training.
 
+For methods we used, there are models file folders in:
+```Bash
+sreworks-ext/aiops/AnomalyDetectionBenchmark/models
+```
+All the details are shown inside.
 <a name="tVl84"></a>
 ## 4、Experiments Running（如何通过代码和数据复现结果）
 ![](img/img.png)
 - Download datasets
    - Download our datasets from  [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) , unzip the file and put it in:
-```dockerfile
+```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo
 ```
 
    - Download public datasets and put them in:
-```dockerfile
+```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/public
 ```
 
 - Data Preprocess
 
 We prepare three filling methods for data preprocessing: Mean, Linear Interpolation and Zero.<br />The data preprocessor file is in:
-```dockerfile
+```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo/datafill_methods.ipynb
 ```
 You can also use your own filling method to process data.
 
 - Train and Predict
 
-All details for models we listed above are in:
-```dockerfile
-sreworks-ext/aiops/AnomalyDetectionBenchmark/models
-```
-To use those models to train and predict:
+To use models listed above to train and predict:
+
 
 - Result Evaluation
+
 
 
 *For results details, see our paper "Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets".
