@@ -244,7 +244,7 @@ class metricor:
         return count
     
     def extend_postive_range(self, x, window=5):
-        label = x.copy().astype(float).flatten()
+        label = x.copy().astype(float)
         L = self.range_convers_new(label)   # index of non-zero segments
         length = len(label)
         for k in range(len(L)):
