@@ -120,6 +120,9 @@ All the details are shown inside.
 <a name="tVl84"></a>
 ## 4、Experiments Running（如何通过代码和数据复现结果）
 ![](img/img.png)
+The framework of our benchmark is shown above. As the lack of data usually happens, we provide three different filling NaN methods and focus more on the performance of deep learning models with diverse evaluation metrics.
+
+Following steps will show the process to run the experiments.
 - Download datasets
    - Download our datasets from  [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) , unzip the file and put it in:
 ```Bash
