@@ -1,0 +1,27 @@
+------------ Options -------------
+batchsize: 64
+beta1: 0.5
+dataname: train.npy
+dataroot: /mnt/workspace/workgroup/lingke/holo/filllinear/paoding
+dataset: ecg
+device: gpu
+folder: 0
+gpu_ids: [0]
+isize: 320
+istest: False
+lr: 0.0001
+model: beatgan
+n_aug: 0
+name: beatgan/ecg
+nc: 25
+ndf: 32
+ngf: 32
+ngpu: 1
+niter: 100
+nz: 50
+outf: ./output
+print_freq: 100
+threshold: 0.05
+w_adv: 1
+workers: 1
+-------------- End ----------------
