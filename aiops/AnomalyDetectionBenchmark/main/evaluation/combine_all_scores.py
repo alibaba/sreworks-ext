@@ -8,15 +8,21 @@ from .affiliation.generics import convert_vector_to_events
 from .affiliation.metrics import pr_from_events
 from .vus.models.feature import Window
 from .vus.metrics import get_range_vus_roc
-from pprint import pprint
+
 from decimal import Decimal
 
 
-def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, dataset):
+
+def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, modelname):
     events_gt = convert_vector_to_events(y_test) # [(4, 5), (8, 9)]
     events_pred = convert_vector_to_events(pred_labels)     # [(3, 4), (7, 10)]
+    TP = np.sum(pred_labels * y_test)
+    TN = np.sum((1 - pred_labels) * (1 - y_test))
+    FP = np.sum(pred_labels * (1 - y_test))
+    FN = np.sum((1 - pred_labels) * y_test)
     Trange = (0, len(y_test))
     affiliation = pr_from_events(events_pred, events_gt, Trange)
+    #affiliation = pr_from_events(events_gt, events_pred, Trange)
     true_events = get_events(y_test)
     _, _, _, f1_score_ori, f05_score_ori = get_accuracy_precision_recall_fscore(y_test, pred_labels)
     f1_score_pa = get_point_adjust_scores(y_test, pred_labels, true_events)[5]
@@ -34,7 +40,7 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, dataset):
 
 
     score_list = {
-        "dataset": dataset,
+        "model": modelname,
         "Affiliation precision": affiliation['precision'],
         "Affiliation recall": affiliation['recall'],
         "MCC_score": MCC_score,
@@ -55,16 +61,15 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, dataset):
         "range_auc": range_auc,
         "range_f_score": range_f_score,
     }
-    ### 保留4位小数
+
     for key in score_list.keys():
-        if key == "dataset":
+        if key == "model":
             continue
         score_list[key] = float(Decimal(score_list[key]).quantize(Decimal("0.0001"),rounding = "ROUND_HALF_UP"))
     return score_list
 
 
 def main():
-    dataset = ''
     y_test = np.zeros(100)
     y_test[10:20] = 1
     y_test[50:60] = 1
@@ -76,7 +81,7 @@ def main():
     anomaly_scores[55:62] = 0.6
     pred_labels[51:55] = 1
     true_events = get_events(y_test)
-    scores = combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores,dataset)
+    scores = combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, 'test')
     # scores = test(y_test, pred_labels)
     for key,value in scores.items():
         print(key,' : ',value)

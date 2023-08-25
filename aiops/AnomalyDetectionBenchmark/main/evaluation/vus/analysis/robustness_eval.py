@@ -16,11 +16,12 @@ module_path = os.path.abspath(os.path.join('../..'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from metrics.vus.utils.slidingWindows import find_length
-from metrics.vus.utils.metrics import metricor
 
-from metrics.vus.models.distance import Fourier
-from metrics.vus.models.feature import Window
+from ..utils.slidingWindows import find_length
+from ..utils.metrics import metricor
+
+from ..models.distance import Fourier
+from ..models.feature import Window
 
 
 def generate_new_label(label,lag):

@@ -45,7 +45,7 @@ def get_adjust_F1PA(pred, gt):
             anomaly_state = False
         if anomaly_state:
             pred[i] = 1
-            
+
     from sklearn.metrics import precision_recall_fscore_support
     from sklearn.metrics import accuracy_score
 

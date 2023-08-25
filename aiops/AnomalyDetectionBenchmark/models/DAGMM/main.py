@@ -3,11 +3,14 @@ import numpy as np
 import os
 import csv
 from spot import SPOT
+
 import itertools
+
 
 from metrics.combine_all_scores import combine_all_evaluation_scores
 
 from dagmm import DAGMM
+
 
 public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
 
@@ -20,7 +23,6 @@ pub_result_file = 'dagmm_pub_result.csv'
 # SPOT config
 q = 1e-4
 lm = 0.999
-
 
 def load_holo_dataset(dataset):
     folder = os.path.join(holo_datafolder, dataset)
@@ -46,11 +48,13 @@ def load_pub_dataset(dataset):
         label = np.load(os.path.join(folder, f'{dataset}_test_label.npy'))
     return train, test, label
 
-
+  
 def adjust_predicts(score, label,
                     threshold=None,
                     pred=None,
                     calc_latency=False):
+
+  
     if len(score) != len(label):
         raise ValueError("score and label must have the same length")
     score = np.asarray(score)
@@ -74,6 +78,7 @@ def adjust_predicts(score, label,
                     if not predict[j]:
                         predict[j] = True
                         latency += 1
+
         elif not actual[i]:
             anomaly_state = False
         if anomaly_state:
@@ -158,6 +163,7 @@ class CustomGridSearch:
         return param_combinations
 
 
+
 if __name__ == '__main__':
     score_list = {
         "dataset": "dataset",
@@ -191,3 +197,4 @@ if __name__ == '__main__':
     test(public_datasets,True)
     # holo dataset test
     test(holo_datasets, False)
+
