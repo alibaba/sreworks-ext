@@ -1,0 +1,4 @@
+__pycache__
+*.pyc
+openai-key.sh
+.DS_Store

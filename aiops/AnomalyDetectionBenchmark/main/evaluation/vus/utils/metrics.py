@@ -336,7 +336,7 @@ class metricor:
         for i in np.linspace(0, len(score)-1, 250).astype(int):
             threshold = score_sorted[i]
             # print('thre='+str(threshold))
-            pred = score>= threshold
+            pred = score >= threshold
             TPR, FPR, Precision = self.TPR_FPR_RangeAUC(labels, pred, P,L)
             
             TPR_list.append(TPR)

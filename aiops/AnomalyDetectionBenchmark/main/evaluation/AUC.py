@@ -17,6 +17,7 @@ def extend_postive_range(x, window=16):
         # x1 is the extended list like [1,2,3] which are non-zero(from the end-e)
         x1 = np.arange(e, min(e + window // 2, length))
         label[x1] += np.sqrt(1 - (x1 - e) / (window))
+
         # before the start-s
         x2 = np.arange(max(s - window // 2, 0), s)
         label[x2] += np.sqrt(1 - (s - x2) / (window))

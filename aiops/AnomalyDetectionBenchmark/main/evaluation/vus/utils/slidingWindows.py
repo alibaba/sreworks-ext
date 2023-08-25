@@ -11,7 +11,6 @@ module_path = os.path.abspath(os.path.join('../..'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 # determine sliding window (period) based on ACF
-
 def find_length(data):
     if len(data.shape)>1:
         return 0

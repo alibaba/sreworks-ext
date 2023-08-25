@@ -24,7 +24,6 @@ def get_point_adjust_scores(y_test, pred_labels, true_events, thereshold_k=0, wh
     prec, rec, fscore = get_prec_rec_fscore(tp, fp, fn)
     return fp, fn, tp, prec, rec, fscore
 
-
 def get_adjust_F1PA(pred, gt):
     anomaly_state = False
     for i in range(len(gt)):

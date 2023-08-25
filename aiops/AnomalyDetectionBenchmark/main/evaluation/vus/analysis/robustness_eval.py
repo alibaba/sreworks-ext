@@ -16,6 +16,7 @@ module_path = os.path.abspath(os.path.join('../..'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
+
 from ..utils.slidingWindows import find_length
 from ..utils.metrics import metricor
 

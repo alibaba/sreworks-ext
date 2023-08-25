@@ -8,6 +8,7 @@ from .affiliation.generics import convert_vector_to_events
 from .affiliation.metrics import pr_from_events
 from .vus.models.feature import Window
 from .vus.metrics import get_range_vus_roc
+
 from decimal import Decimal
 
 
@@ -19,15 +20,11 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, modelname
     TN = np.sum((1 - pred_labels) * (1 - y_test))
     FP = np.sum(pred_labels * (1 - y_test))
     FN = np.sum((1 - pred_labels) * y_test)
-    print('TP,TN,FP,FN')
-    print(TP,TN,FP,FN)
     Trange = (0, len(y_test))
     affiliation = pr_from_events(events_pred, events_gt, Trange)
     #affiliation = pr_from_events(events_gt, events_pred, Trange)
-    print('affiliation',affiliation['precision'],affiliation['recall'])
     true_events = get_events(y_test)
     _, _, _, f1_score_ori, f05_score_ori = get_accuracy_precision_recall_fscore(y_test, pred_labels)
-    print('f1_score_ori, f05_score_ori',f1_score_ori, f05_score_ori)
     f1_score_pa = get_point_adjust_scores(y_test, pred_labels, true_events)[5]
     pa_accuracy, pa_precision, pa_recall, pa_f_score = get_adjust_F1PA(pred_labels, y_test)
     range_f_score = customizable_f1_score(y_test, pred_labels)
@@ -35,7 +32,6 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, modelname
     precision_k = precision_at_k(y_test, anomaly_scores, pred_labels)
     if not isinstance(precision_k,float):
         precision_k = precision_k[0]
-    print('precision_k',precision_k)
     point_auc = point_wise_AUC(anomaly_scores, y_test)
     range_auc = Range_AUC(anomaly_scores, y_test)
     MCC_score = MCC(y_test, pred_labels)
@@ -65,6 +61,7 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, modelname
         "range_auc": range_auc,
         "range_f_score": range_f_score,
     }
+
     for key in score_list.keys():
         if key == "model":
             continue
@@ -84,7 +81,7 @@ def main():
     anomaly_scores[55:62] = 0.6
     pred_labels[51:55] = 1
     true_events = get_events(y_test)
-    scores = combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores)
+    scores = combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, 'test')
     # scores = test(y_test, pred_labels)
     for key,value in scores.items():
         print(key,' : ',value)
