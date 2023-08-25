@@ -123,7 +123,7 @@ All the details are shown inside.
 The framework of our benchmark is shown above. As the lack of data usually happens, we provide three different filling NaN methods and focus more on the performance of deep learning models with diverse evaluation metrics.
 
 Following steps will show the process to run the experiments.
-- Download datasets
+- Datasets Downloading
    - Download our datasets from  [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) , unzip the file and put it in:
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo
@@ -134,20 +134,24 @@ sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/public
 ```
 
-- Data Preprocess
+- Data Preprocessing
 
 We prepare three filling methods for data preprocessing: Mean, Linear Interpolation and Zero.<br />The data preprocessor file is in:
 ```Bash
-sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo/datafill_methods.ipynb
+sreworks-ext/aiops/AnomalyDetectionBenchmark/main/datafill_methods.ipynb
 ```
 You can also use your own filling method to process data.
 
-- Train and Predict
+- Model Running
 
-To use models listed above to train and predict:
+To use models listed above:
+In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
+```Bash
+python main.py --model
+```
 
 
-- Result Evaluation
+
 
 
 
