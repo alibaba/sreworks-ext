@@ -41,7 +41,7 @@ elif config.model == 'BeatGAN':
     command = "python ./models/BeatGAN/main.py"
 elif config.model == 'LSTM-VAE':
     command = "python ./models/classic/main.py LSTM-VAE"
-elif config.model == 'DAGMM':
+elif config.model == 'python ./models/DAGMM/main.py':
     command = "your_command_here"
 elif config.model == 'DeepSVDD':
     command = "python ./models/classic/main.py DeepSVDD"
