@@ -28,33 +28,33 @@ args = vars(config)
 
 
 if config.model == 'DCDetector':
-    command = "bash ./models/DCdetector/scripts/MSL.sh"
+    command = "bash ../models/DCdetector/scripts/MSL.sh"
 elif config.model == 'AnomalyTransformer':
-    command = "bash ./models/AnomalyTransformer/scripts/MSL.sh"
+    command = "bash ../models/AnomalyTransformer/scripts/MSL.sh"
 elif config.model == 'ECOD':
-    command = "python ./models/classic/main.py ECOD"
+    command = "python ../models/classic/main.py ECOD"
 elif config.model == 'USAD':
-    command = "python ./models/usad/main.py"
+    command = "python ../models/usad/main.py"
 elif config.model == 'COPOD':
-    command = "python ./models/classic/main.py COPOD"
+    command = "python ../models/classic/main.py COPOD"
 elif config.model == 'BeatGAN':
-    command = "python ./models/BeatGAN/main.py"
+    command = "python ../models/BeatGAN/main.py"
 elif config.model == 'LSTM-VAE':
-    command = "python ./models/classic/main.py LSTM-VAE"
-elif config.model == 'python ./models/DAGMM/main.py':
-    command = "your_command_here"
+    command = "python ../models/classic/main.py LSTM-VAE"
+elif config.model == 'DAGMM':
+    command = "python ../models/DAGMM/main.py"
 elif config.model == 'DeepSVDD':
-    command = "python ./models/classic/main.py DeepSVDD"
+    command = "python ../models/classic/main.py DeepSVDD"
 elif config.model == 'LSTM-AE':
-    command = "python ./models/classic/main.py LSTM-AE"
+    command = "python ../models/classic/main.py LSTM-AE"
 elif config.model == 'LSTM':
-    command = "python ./models/classic/main.py LSTM"
+    command = "python ../models/classic/main.py LSTM"
 elif config.model == 'IForest':
-    command = "python ./models/classic/main.py IForest"
+    command = "python ../models/classic/main.py IForest"
 elif config.model == 'KNN':
-    command = "python ./models/classic/main.py KNN"
+    command = "python ../models/classic/main.py KNN"
 elif config.model == 'LOF':
-    command = "python ./models/classic/main.py LOF"
+    command = "python ../models/classic/main.py LOF"
 
 proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 print_output(proc)
