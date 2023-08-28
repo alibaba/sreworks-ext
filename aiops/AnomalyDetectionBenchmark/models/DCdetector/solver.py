@@ -5,7 +5,7 @@ import numpy as np
 import os
 import time
 from utils.utils import *
-from model.AnomalyTransformer import AnomalyTransformer
+from model.DCdetector import DCdetector
 from data_factory.data_loader import get_loader_segment
 from einops import rearrange
 from metrics.metrics import *
@@ -15,7 +15,6 @@ warnings.filterwarnings('ignore')
 def my_kl_loss(p, q):
     res = p * (torch.log(p + 0.0001) - torch.log(q + 0.0001))
     return torch.mean(torch.sum(res, dim=-1), dim=1)
-
 
 def adjust_learning_rate(optimizer, epoch, lr_):
     lr_adjust = {epoch: lr_ * (0.5 ** ((epoch - 1) // 1))}
@@ -67,10 +66,10 @@ class Solver(object):
 
         self.__dict__.update(Solver.DEFAULTS, **config)
 
-        self.train_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size, mode='train', dataset=self.dataset, )
-        self.vali_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size, mode='val', dataset=self.dataset)
-        self.test_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size, mode='test', dataset=self.dataset)
-        self.thre_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size, mode='thre', dataset=self.dataset)
+        self.train_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='train', dataset=self.dataset, )
+        self.vali_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='val', dataset=self.dataset)
+        self.test_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='test', dataset=self.dataset)
+        self.thre_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='thre', dataset=self.dataset)
 
         self.build_model()
         
@@ -83,7 +82,7 @@ class Solver(object):
         
 
     def build_model(self):
-        self.model = AnomalyTransformer(win_size=self.win_size, enc_in=self.input_c, c_out=self.output_c, n_heads=self.n_heads, d_model=self.d_model, e_layers=self.e_layers, patch_size=self.patch_size, channel=self.input_c)
+        self.model = DCdetector(win_size=self.win_size, enc_in=self.input_c, c_out=self.output_c, n_heads=self.n_heads, d_model=self.d_model, e_layers=self.e_layers, patch_size=self.patch_size, channel=self.input_c)
         
         if torch.cuda.is_available():
             self.model.cuda()
@@ -145,7 +144,6 @@ class Solver(object):
                 input = input_data.float().to(self.device)
                 series, prior = self.model(input)
                 
-                # calculate Association discrepancy
                 series_loss = 0.0
                 prior_loss = 0.0
 
@@ -168,8 +166,7 @@ class Solver(object):
                 prior_loss = prior_loss / len(prior)
 
                 loss = prior_loss - series_loss
-                
-                # option
+
                 if (i + 1) % 100 == 0:
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.num_epochs - epoch) * train_steps - i)
@@ -179,8 +176,6 @@ class Solver(object):
  
                 loss.backward()
                 self.optimizer.step()
-
-            train_loss = np.average([0])
 
             vali_loss1, vali_loss2 = self.vali(self.test_loader)
 
@@ -236,7 +231,7 @@ class Solver(object):
         attens_energy = []
         for i, (input_data, labels) in enumerate(self.thre_loader):
             input = input_data.float().to(self.device)
-
+            series, prior = self.model(input)
             series_loss = 0.0
             prior_loss = 0.0
             for u in range(len(prior)):
@@ -256,7 +251,7 @@ class Solver(object):
                         (prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
                                                                                                 self.win_size)),
                         series[u].detach()) * temperature
-            # Metric
+
             metric = torch.softmax((-series_loss - prior_loss), dim=-1)
             cri = metric.detach().cpu().numpy()
             attens_energy.append(cri)
@@ -272,7 +267,7 @@ class Solver(object):
         attens_energy = []
         for i, (input_data, labels) in enumerate(self.thre_loader):
             input = input_data.float().to(self.device)
-
+            series, prior = self.model(input)
             series_loss = 0.0
             prior_loss = 0.0
             for u in range(len(prior)):
@@ -296,7 +291,7 @@ class Solver(object):
             cri = metric.detach().cpu().numpy()
             attens_energy.append(cri)
             test_labels.append(labels)
-
+            
         attens_energy = np.concatenate(attens_energy, axis=0).reshape(-1)
         test_labels = np.concatenate(test_labels, axis=0).reshape(-1)
         test_energy = np.array(attens_energy)
@@ -304,18 +299,13 @@ class Solver(object):
 
         pred = (test_energy > thresh).astype(int)
         gt = test_labels.astype(int)
-
-        np.save("events_scores.npy",test_energy)
-        np.save("events_pred.npy",pred)
-        np.save("events_gt.npy",gt)
-
+        
         matrix = [self.index]
-        scores_simple = combine_all_evaluation_scores(pred, gt, test_energy) ## all the metrics are calculated here 
-        for key, value in scores_simple.items(): ## print all the metrics
+        scores_simple = combine_all_evaluation_scores(pred, gt, test_energy)
+        for key, value in scores_simple.items():
             matrix.append(value)
             print('{0:21} : {1:0.4f}'.format(key, value))
 
-        # detection adjustment
         anomaly_state = False
         for i in range(len(gt)):
             if gt[i] == 1 and pred[i] == 1 and not anomaly_state:
@@ -349,7 +339,6 @@ class Solver(object):
         
         if self.data_path == 'UCR' or 'UCR_AUG':
             import csv
-            import pandas as pd
             with open('result/'+self.data_path+'.csv', 'a+') as f:
                 writer = csv.writer(f)
                 writer.writerow(matrix)
