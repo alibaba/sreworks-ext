@@ -16,7 +16,7 @@ from dagmm import DAGMM
 public_datasets = ['MSL']
 # datasets folder
 public_datafolder = '../../datasets/public/'
-holo_datafolder = '../../datasets/holo/'
+holo_datafolder = '../../datasets/holo/fillzero_std'
 holo_datasets = os.listdir(holo_datafolder)
 holo_result_file = 'dagmm_holo_result.csv'
 pub_result_file = 'dagmm_pub_result.csv'
