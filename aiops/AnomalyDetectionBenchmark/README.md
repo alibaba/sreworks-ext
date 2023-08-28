@@ -6,7 +6,7 @@ In this paper, we advance the benchmarking of time series anomaly detection from
 ## 1、Datasets
 <a name="T1rHA"></a>
 ### 1.1 Real-world Hologres AIOps Dataset
-The Hologres Datasets are on [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) <br />For each instance, a csv file is given. The train dataset and test dataset in each instance should be split evenly through all the timestamps.
+The Hologres Datasets are on [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563/2) <br />For each instance, a csv file is given. The train dataset and test dataset in each instance should be split evenly through all the timestamps.
 
 - Illustration of the collection of Hologres AIOps dataset
 
