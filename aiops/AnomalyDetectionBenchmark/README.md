@@ -118,7 +118,7 @@ sreworks-ext/aiops/AnomalyDetectionBenchmark/models
 ```
 All the details are shown inside.
 <a name="tVl84"></a>
-## 4、Experiments Running（如何通过代码和数据复现结果）
+## 4、Experiments Running（How to reproduce results through code and dataset）
 ![](img/img.png)
 - Download datasets
    - Download our datasets from  [https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip](https://sreworks.oss-cn-beijing.aliyuncs.com/aiops/BenchmarkDataFinal.zip) , unzip the file and put it in:
