@@ -145,17 +145,19 @@ You can also use your own filling method to process data.
 - Model Running
 
 To use models listed above:
+
 In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
 ```Bash
 python main.py --model <model>
 ```
 where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN'.
 
+We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. You can run the command above to see part of results.
 
 
 
 
-*For results details, see our paper "Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets".
+*For more results details, see our paper "Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets".
 
 ### License
 Apache License
