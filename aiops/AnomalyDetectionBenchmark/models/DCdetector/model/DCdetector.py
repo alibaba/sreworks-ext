@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
-from .attn import AnomalyAttention, AttentionLayer
+from .attn import DAC_structure, AttentionLayer
 from .embed import DataEmbedding, TokenEmbedding
 from .RevIN import RevIN
 from tkinter import _flatten
@@ -25,16 +25,15 @@ class Encoder(nn.Module):
 
 
 
-class AnomalyTransformer(nn.Module):
+class DCdetector(nn.Module):
     def __init__(self, win_size, enc_in, c_out, n_heads=1, d_model=256, e_layers=3, patch_size=[3,5,7], channel=55, d_ff=512, dropout=0.0, activation='gelu', output_attention=True):
-        super(AnomalyTransformer, self).__init__()
+        super(DCdetector, self).__init__()
         self.output_attention = output_attention
-        
         self.patch_size = patch_size
         self.channel = channel
         self.win_size = win_size
         
-        # Embedding  
+        # Patching List  
         self.embedding_patch_size = nn.ModuleList()
         self.embedding_patch_num = nn.ModuleList()
         for i, patchsize in enumerate(self.patch_size):
@@ -43,11 +42,11 @@ class AnomalyTransformer(nn.Module):
 
         self.embedding_window_size = DataEmbedding(enc_in, d_model, dropout)
          
-        # Encoder
+        # Dual Attention Encoder
         self.encoder = Encoder(
             [
                 AttentionLayer(
-                    AnomalyAttention(win_size, patch_size, channel, False, attention_dropout=dropout, output_attention=output_attention),
+                    DAC_structure(win_size, patch_size, channel, False, attention_dropout=dropout, output_attention=output_attention),
                     d_model, patch_size, channel, n_heads, win_size)for l in range(e_layers)
             ],
             norm_layer=torch.nn.LayerNorm(d_model)
@@ -60,13 +59,13 @@ class AnomalyTransformer(nn.Module):
         B, L, M = x.shape #Batch win_size channel
         series_patch_mean = []
         prior_patch_mean = []
-        
         revin_layer = RevIN(num_features=M)
-        # revIN operation
+
+        # Instance Normalization Operation
         x = revin_layer(x, 'norm')
         x_ori = self.embedding_window_size(x)
         
-        # Patch operation 
+        # Mutil-scale Patching Operation 
         for patch_index, patchsize in enumerate(self.patch_size):
             x_patch_size, x_patch_num = x, x
             x_patch_size = rearrange(x_patch_size, 'b l m -> b m l') #Batch channel win_size

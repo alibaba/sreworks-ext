@@ -26,8 +26,6 @@ class RevIN(nn.Module):
 
     def _init_params(self):
         # initialize RevIN params: (C,)
-        # self.affine_weight = nn.Parameter(torch.ones(self.num_features))
-        # self.affine_bias = nn.Parameter(torch.zeros(self.num_features))
         self.affine_weight = torch.ones(self.num_features)
         self.affine_bias = torch.zeros(self.num_features)
         self.affine_weight=self.affine_weight.to(device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
