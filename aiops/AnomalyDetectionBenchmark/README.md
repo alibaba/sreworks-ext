@@ -148,9 +148,11 @@ To use models listed above:
 
 In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
 ```Bash
-python main.py --model <model>
+python main.py --model <model> --dataset <dataset> --instance <holo_instance>
 ```
-where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN'.
+where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN',
+`<dataset>` denotes the public datasets PSM', 'MSL', 'SMD', 'NIPS-TS-GECCO', 'NIPS-TS-SWAN', 'SMAP', and our proposed 'HOLO', and
+`<instance>` indicates the instance of the sub-dataset in the HOLO dataset.
 
 We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. You can run the command above to see part of results.
 
