@@ -12,11 +12,11 @@ from metrics.combine_all_scores import combine_all_evaluation_scores
 from dagmm import DAGMM
 
 
-public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
-
+# public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
+public_datasets = ['MSL']
 # datasets folder
-public_datafolder = '/mnt/workspace/workgroup/lingke/public/'
-holo_datafolder = '/mnt/workspace/workgroup/lingke/holo_open/'
+public_datafolder = '../../datasets/public/'
+holo_datafolder = '../../datasets/holo/fillzero_std'
 holo_datasets = os.listdir(holo_datafolder)
 holo_result_file = 'dagmm_holo_result.csv'
 pub_result_file = 'dagmm_pub_result.csv'
