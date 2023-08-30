@@ -34,7 +34,6 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, dataset):
 
 
     score_list = {
-        "dataset": dataset,
         "Affiliation precision": affiliation['precision'],
         "Affiliation recall": affiliation['recall'],
         "MCC_score": MCC_score,
@@ -57,8 +56,6 @@ def combine_all_evaluation_scores(y_test, pred_labels, anomaly_scores, dataset):
     }
     ### 保留4位小数
     for key in score_list.keys():
-        if key == "dataset":
-            continue
         score_list[key] = float(Decimal(score_list[key]).quantize(Decimal("0.0001"),rounding = "ROUND_HALF_UP"))
     return score_list
 

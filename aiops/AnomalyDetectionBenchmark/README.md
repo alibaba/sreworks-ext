@@ -148,7 +148,7 @@ To use the models listed above:
 
 In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
 ```Bash
-python main.py --model <model> --dataset <dataset> --instance <holo_instance> --result_save_path <result_save_path>
+python main.py --model <model_name> --dataset <public_dataset> --instance <holo_instance_num> --result_save_path <result_save_path>
 ```
 where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN.
 

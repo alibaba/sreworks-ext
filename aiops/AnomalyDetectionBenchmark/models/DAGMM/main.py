@@ -16,18 +16,27 @@ parser = argparse.ArgumentParser()
 # Add all the parameters you need there
 
 parser.add_argument('--dataset', metavar='-d', type=str, required=False, default='MSL', help='dataset name')
-parser.add_argument('--instance', metavar='-i', type=str, required=False, default='instance15', help='instance name')
+parser.add_argument('--instance', metavar='-i', type=str, required=False, default='15', help='instance number')
 parser.add_argument('--holo_datafolder', type=str, default='../../datasets/holo/fillzero_std',help='holo_datafolder')
 parser.add_argument('--public_datafolder', type=str, default='../../datasets/public/',help='public_datafolder')
+parser.add_argument('--holo_result_save_path', type=str, default='../../result/holo_result.csv',help='holo_result_save_path')
+parser.add_argument('--public_result_save_path', type=str, default='../../result/public_result.csv',help='public_result_save_path')
+config = parser.parse_args()
 
-# public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
-public_datasets = ['MSL']
+public_datafolder = config.public_datafolder
+public_datasets = [config.dataset]
+holo_datafolder = config.holo_datafolder
+holo_datasets = "instance"+config.instance
+holo_result_file = config.holo_result_save_path
+pub_result_file = config.public_result_save_path
+
 # datasets folder
-public_datafolder = '../../datasets/public/'
-holo_datafolder = '../../datasets/holo/fillzero_std'
-holo_datasets = os.listdir(holo_datafolder)
-holo_result_file = 'dagmm_holo_result.csv'
-pub_result_file = 'dagmm_pub_result.csv'
+# public_datafolder = '../../datasets/public/'
+# public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
+# holo_datafolder = '../../datasets/holo/fillzero_std'
+# holo_datasets = os.listdir(holo_datafolder)
+# holo_result_file = 'dagmm_holo_result.csv'
+# pub_result_file = 'dagmm_pub_result.csv'
 # SPOT config
 q = 1e-4
 lm = 0.999
@@ -120,7 +129,11 @@ def test(datasets, pub):
         custom_grid_search = CustomGridSearch(param_grid)
         # 在训练数据上执行自定义网格搜索
         custom_grid_search.fit(trainD, testD, labels, dataset)
-
+        custom_grid_search.best_score["model"] = "DAGMM"
+        if pub:
+            custom_grid_search.best_score["dataset"] = dataset
+        else:
+            custom_grid_search.best_score["instance"] = dataset
         with open(result_file, 'a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=custom_grid_search.best_score.keys())
             writer.writerow(custom_grid_search.best_score)
@@ -173,34 +186,7 @@ class CustomGridSearch:
 
 
 if __name__ == '__main__':
-    score_list = {
-        "dataset": "dataset",
-        "Affiliation precision": "Affiliation precision",
-        "Affiliation recall": "Affiliation recall",
-        "MCC_score": "MCC_score",
-        "R_AUC_PR": "R_AUC_PR",
-        "R_AUC_ROC": "R_AUC_ROC",
-        "VUS_PR": "VUS_PR",
-        "VUS_ROC": "VUS_ROC",
-        "f05_score_ori": "f05_score_ori",
-        "f1_score_c": "f1_score_c",
-        "f1_score_ori": "f1_score_ori",
-        "f1_score_pa": "f1_score_pa",
-        "pa_accuracy": "pa_accuracy",
-        "pa_f_score": "pa_f_score",
-        "pa_precision": "pa_precision",
-        "pa_recall": "pa_recall",
-        "point_auc": "point_auc",
-        "precision_k": "precision_k",
-        "range_auc": "range_auc",
-        "range_f_score": "range_f_score",
-    }
-    with open(holo_result_file, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=score_list.keys())
-        writer.writeheader()
-    with open(pub_result_file, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=score_list.keys())
-        writer.writeheader()
+
     # public dataset test
     test(public_datasets,True)
     # holo dataset test
