@@ -5,7 +5,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import torch
 from options import Options
 
-from data import load_data
+from data import load_data, load_data2
 
 # from dcgan import DCGAN as myModel
 
@@ -18,7 +18,7 @@ torch.cuda.is_available() else "cpu")
 
 opt = Options().parse()
 print(opt)
-dataloader=load_data(opt)
+dataloader=load_data2(opt)
 print("load data success!!!")
 
 if opt.model == "beatgan":

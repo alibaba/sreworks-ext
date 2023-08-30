@@ -77,6 +77,7 @@ def adjust_predicts(score, label,
         return predict
 
 opt = Options().parse()
+res_save_path = opt.savepath
 train_path = os.path.join(opt.dataroot, 'train.py')
 test_path = os.path.join(opt.dataroot, 'test.py')
 label_path = os.path.join(opt.dataroot, 'test_label.npy')
@@ -127,7 +128,11 @@ with torch.no_grad():
     
     loss = np.array(loss)
     scores = combine_all_evaluation_scores(labels, pred, loss, opt.dataname)
+    if savepath.contain('holo'):
+        scores["instance"] = opt.dataroot.split('/')[-1]
+    else:
+        scores["dataset"] = opt.dataroot.split('/')[-1]
     print(scores)
-    with open('result.csv','a',newline='') as f:
+    with open(savepath, 'a',newline='') as f:
         writer = csv.DictWriter(f,fieldnames=scores.keys())
         writer.writerow(scores)

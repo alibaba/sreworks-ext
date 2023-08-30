@@ -21,6 +21,7 @@ class Options():
         self.parser.add_argument('--dataset', default='ecg', help='ecg dataset')
         self.parser.add_argument('--dataroot', default='', help='path to dataset')
         self.parser.add_argument('--dataname', default='', help='dataset name')
+        self.parser.add_argument('--savepath', default='', help='savepath')
         self.parser.add_argument('--batchsize', type=int, default=64, help='input batch size')
         self.parser.add_argument('--workers', type=int, help='number of data loading workers', default=1)
         self.parser.add_argument('--isize', type=int, default=320, help='input sequence size.')

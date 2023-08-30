@@ -7,13 +7,99 @@ from sklearn.model_selection import train_test_split
 
 np.random.seed(42)
 
+WINDOW=320
+STRIDE_TRAIN=5
+STRIDE_TEST=20
+
 def normalize(seq):
     '''
     normalize to [-1,1]
     :param seq:
     :return:
     '''
-    return 2*(seq-np.min(seq))/(np.max(seq)-np.min(seq))-1
+    return 2*(seq-np.min(seq))/(np.max(seq)-np.min(seq)+1e-4)-1
+
+def get_from_one(ts, train=True):
+    ts_length=ts.shape[0]
+    samples=[]
+    stride=STRIDE_TRAIN if train else STRIDE_TEST
+    for start in np.arange(0,ts_length,stride):
+        if start+WINDOW>=ts_length:
+            break
+        samples.append(ts[start:start+WINDOW,:])
+
+    assert  len(samples)== np.ceil(((ts_length-WINDOW)/stride))
+    return np.array(samples)
+
+def load_data2(opt):
+    train_dataset=None
+    val_dataset=None
+    
+
+    N_samples=np.load(os.path.join(opt.dataroot, opt.dataname)) #NxCxL
+    opt.nc = N_samples.shape[1]
+    #N_samples=np.load("./public_datasets/MSL/MSL_train.npy") #NxCxL
+    N_samples = get_from_one(N_samples)
+    N_samples = np.transpose(N_samples,(0,2,1))
+    # normalize all
+    #for i in range(N_samples.shape[0]):
+    #    for j in range(opt.nc):
+    #        N_samples[i][j]=normalize(N_samples[i][j][:])
+    N_samples=N_samples[:,:opt.nc,:]
+
+    
+    # train / test
+    test_N,test_N_y, train_N,train_N_y = getFloderK(N_samples,opt.folder,0)
+   
+
+
+    # train / val
+    train_N, val_N, train_N_y, val_N_y = getPercent(train_N, train_N_y, 0.1, 0)
+
+
+    val_data=np.concatenate([val_N])
+    val_y=np.concatenate([val_N_y])
+
+
+    print("train data size:{}".format(train_N.shape))
+    print("val data size:{}".format(val_data.shape))
+    print("test N data size:{}".format(test_N.shape))
+
+
+    if not opt.istest and opt.n_aug>0:
+        train_N,train_N_y=data_aug(train_N,train_N_y,times=opt.n_aug)
+        print("after aug, train data size:{}".format(train_N.shape))
+
+
+
+    train_dataset = TensorDataset(torch.Tensor(train_N),torch.Tensor(train_N_y))
+    val_dataset= TensorDataset(torch.Tensor(val_data), torch.Tensor(val_y))
+    test_N_dataset = TensorDataset(torch.Tensor(test_N), torch.Tensor(test_N_y))
+
+
+
+    # assert (train_dataset is not None  and test_dataset is not None and val_dataset is not None)
+
+    dataloader = {"train": DataLoader(
+                        dataset=train_dataset,  # torch TensorDataset format
+                        batch_size=opt.batchsize,  # mini batch size
+                        shuffle=True,
+                        num_workers=int(opt.workers),
+                        drop_last=True),
+                    "val": DataLoader(
+                        dataset=val_dataset,  # torch TensorDataset format
+                        batch_size=opt.batchsize,  # mini batch size
+                        shuffle=True,
+                        num_workers=int(opt.workers),
+                        drop_last=False),
+                    "test_N":DataLoader(
+                            dataset=test_N_dataset,  # torch TensorDataset format
+                            batch_size=opt.batchsize,  # mini batch size
+                            shuffle=True,
+                            num_workers=int(opt.workers),
+                            drop_last=False),
+                    }
+    return dataloader
 
 def load_data(opt):
     train_dataset=None
