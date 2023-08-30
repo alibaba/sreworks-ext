@@ -10,68 +10,33 @@ def print_output(proc):
     for line in iter(proc.stdout.readline, b''):
         print(line.decode('utf-8'), end='')
 
-## 结果保存文件头写入
-def write_head(file_path,pub):
-    if os.path.exists(file_path):
-        return
-    if pub:
-        head = "dataset"
-    else:
-        head = "instance"
-    head_list = {
-        "model": "model",
-        head: "dataset",
-        "Affiliation precision": "Affiliation precision",
-        "Affiliation recall": "Affiliation recall",
-        "MCC_score": "MCC_score",
-        "R_AUC_PR": "R_AUC_PR",
-        "R_AUC_ROC": "R_AUC_ROC",
-        "VUS_PR": "VUS_PR",
-        "VUS_ROC": "VUS_ROC",
-        "f05_score_ori": "f05_score_ori",
-        "f1_score_c": "f1_score_c",
-        "f1_score_ori": "f1_score_ori",
-        "f1_score_pa": "f1_score_pa",
-        "pa_accuracy": "pa_accuracy",
-        "pa_f_score": "pa_f_score",
-        "pa_precision": "pa_precision",
-        "pa_recall": "pa_recall",
-        "point_auc": "point_auc",
-        "precision_k": "precision_k",
-        "range_auc": "range_auc",
-        "range_f_score": "range_f_score",
-    }
-    with open(file_path, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=head_list.keys())
-        writer.writeheader()
-    return
-
-holo_result_save_path = '../result/holo_result.csv'
-public_result_save_path = '../result/public_result.csv'
-
-public_datafolder = '../../datasets/public/'
-holo_datafolder = '../../datasets/holo/fillzero_std'
 
 parser = argparse.ArgumentParser()
 
 # Add all the parameters you need there
 parser.add_argument('--model', metavar='-m', type=str, required=False, default='DCDetector',help='model name')
 parser.add_argument('--dataset', metavar='-d', type=str, required=False, default='MSL', help='dataset name')
-parser.add_argument('--instance', metavar='-i', type=str, required=False, default='14', help='instance number')
-
-# other parameters
-parser.add_argument('--num_epochs', type=int, default=3)
-parser.add_argument('--batch_size', type=int, default=128)
+parser.add_argument('--instance', metavar='-i', type=str, required=False, default='15', help='instance number')
 
 # only for Anomaly-transformer and DCdetector
+parser.add_argument('--num_epochs', type=int, default=3)
+parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--input_c', type=int, default=55)
 parser.add_argument('--output_c', type=int, default=55) 
 parser.add_argument('--anormly_ratio', type=float, default=1.0)
+parser.add_argument('--result_save_path', type=str, default='result/result.csv')
+
+# other models' parameters
+parser.add_argument('--holo_datafolder', type=str, default='../../datasets/holo/fillzero_std',help='holo_datafolder')
+parser.add_argument('--public_datafolder', type=str, default='../../datasets/public/',help='public_datafolder')
+parser.add_argument('--holo_result_save_path', type=str, default='../../result/holo_result.csv',help='holo_result_save_path')
+parser.add_argument('--public_result_save_path', type=str, default='../../result/public_result.csv',help='public_result_save_path')
 
 config = parser.parse_args()
 args = vars(config)
-config_command = f' --holo_result_save_path ../{holo_result_save_path} --public_result_save_path ../{public_result_save_path}'
-config_command += f' --public_datafolder {public_datafolder} --holo_datafolder {holo_datafolder}'
+
+config_command = f' --holo_result_save_path ../{config.holo_result_save_path} --public_result_save_path ../{config.public_result_save_path}'
+config_command += f' --public_datafolder {config.public_datafolder} --holo_datafolder {config.holo_datafolder}'
 config_command += f' --dataset {config.dataset} --instance {config.instance}'
 
 if config.model == 'DCDetector':
@@ -105,8 +70,6 @@ elif config.model == 'KNN':
 elif config.model == 'LOF':
     command = "python ../models/classic/main.py LOF"
 
-write_head(holo_result_save_path, False)
-write_head(public_result_save_path, True)
 
 proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 print_output(proc)

@@ -32,7 +32,7 @@ pub_result_file = config.public_result_save_path
 
 # datasets folder
 # public_datafolder = '../../datasets/public/'
-# public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
+# public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'PSM']
 # holo_datafolder = '../../datasets/holo/fillzero_std'
 # holo_datasets = os.listdir(holo_datafolder)
 # holo_result_file = 'dagmm_holo_result.csv'
@@ -104,6 +104,43 @@ def adjust_predicts(score, label,
         return predict, latency / (anomaly_count + 1e-4)
     else:
         return predict
+
+
+## 结果保存文件头写入
+def write_head(file_path,pub):
+    if os.path.exists(file_path):
+        return
+    if pub:
+        head = "dataset"
+    else:
+        head = "instance"
+    head_list = {
+        "model": "model",
+        head: "dataset",
+        "Affiliation precision": "Affiliation precision",
+        "Affiliation recall": "Affiliation recall",
+        "MCC_score": "MCC_score",
+        "R_AUC_PR": "R_AUC_PR",
+        "R_AUC_ROC": "R_AUC_ROC",
+        "VUS_PR": "VUS_PR",
+        "VUS_ROC": "VUS_ROC",
+        "f05_score_ori": "f05_score_ori",
+        "f1_score_c": "f1_score_c",
+        "f1_score_ori": "f1_score_ori",
+        "f1_score_pa": "f1_score_pa",
+        "pa_accuracy": "pa_accuracy",
+        "pa_f_score": "pa_f_score",
+        "pa_precision": "pa_precision",
+        "pa_recall": "pa_recall",
+        "point_auc": "point_auc",
+        "precision_k": "precision_k",
+        "range_auc": "range_auc",
+        "range_f_score": "range_f_score",
+    }
+    with open(file_path, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=head_list.keys())
+        writer.writeheader()
+    return
 
 
 def test(datasets, pub):
@@ -186,9 +223,11 @@ class CustomGridSearch:
 
 
 if __name__ == '__main__':
+    if config.dataset == "HOLO":
+        write_head(holo_result_file, False)
+        test(holo_datasets, False)
+    else:
+        write_head(pub_result_file, True)
+        test(public_datasets,True)
 
-    # public dataset test
-    test(public_datasets,True)
-    # holo dataset test
-    test(holo_datasets, False)
 
