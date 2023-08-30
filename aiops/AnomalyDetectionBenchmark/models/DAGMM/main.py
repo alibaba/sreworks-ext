@@ -3,7 +3,7 @@ import numpy as np
 import os
 import csv
 from spot import SPOT
-
+import argparse
 import itertools
 
 
@@ -11,6 +11,14 @@ from metrics.combine_all_scores import combine_all_evaluation_scores
 
 from dagmm import DAGMM
 
+parser = argparse.ArgumentParser()
+
+# Add all the parameters you need there
+
+parser.add_argument('--dataset', metavar='-d', type=str, required=False, default='MSL', help='dataset name')
+parser.add_argument('--instance', metavar='-i', type=str, required=False, default='instance15', help='instance name')
+parser.add_argument('--holo_datafolder', type=str, default='../../datasets/holo/fillzero_std',help='holo_datafolder')
+parser.add_argument('--public_datafolder', type=str, default='../../datasets/public/',help='public_datafolder')
 
 # public_datasets = ['SMAP', 'MSL', 'SMD', 'NIPS_TS_CCard', 'NIPS_TS_Swan', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'SWaT']
 public_datasets = ['MSL']
