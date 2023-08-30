@@ -69,7 +69,7 @@ All the metrics and labels in our dataset are derived from real-world scenarios.
 Due to Alibaba Internal Data Exposure Policy, we delete all data's timestamps and column names.<br />The last column of every instance file is the anomaly label, other columns are different system metrics.
 <a name="aCTNS"></a>
 ### 1.2 Public Datasets
-You can download the Public Datasets through the following URL: [https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing](https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing)
+You can download the Public Datasets through the following URL: [https://drive.google.com/file/d/1MqJ-Qf20wm8MaweyyzGc3SB3JujTIiEd/view?usp=sharing](https://drive.google.com/file/d/1MqJ-Qf20wm8MaweyyzGc3SB3JujTIiEd/view?usp=sharing)
 <a name="xA92t"></a>
 ## 2、Evaluation Metrics
 The Evaluation Metrics we considered are:
@@ -124,12 +124,13 @@ The framework of our benchmark is shown above. As the lack of data usually happe
 
 Following steps will show the process to run the experiments.
 - Datasets Downloading
-   - Download our datasets from  [https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563/3](https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563/3) , unzip the file and put it in:
+   - Download our datasets from  [https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563/](https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563/) , unzip the file and put it in:
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/holo
 ```
 
-   - Download public datasets and put them in:
+   - Download public datasets from [https://drive.google.com/file/d/1MqJ-Qf20wm8MaweyyzGc3SB3JujTIiEd/view?usp=sharing](https://drive.google.com/file/d/1MqJ-Qf20wm8MaweyyzGc3SB3JujTIiEd/view?usp=sharing)
+and put them in:
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/datasets/public
 ```
@@ -152,9 +153,9 @@ python main.py --model <model_name> --dataset <public_dataset> --instance <holo_
 ```
 where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN.
 
-`<dataset>` denotes the public datasets 'PSM', 'MSL', 'SMD', 'NIPS-TS-GECCO', 'NIPS-TS-SWAN', 'SMAP', and our proposed 'HOLO'.
+`<dataset>` denotes the public datasets 'PSM', 'MSL', 'SMD', 'NIPS_TS_Water', 'NIPS_TS_Syn_Mulvar', 'NIPS_TS_Swan', 'NIPS_TS_CCard', 'SMAP'.
 
-`<instance>` indicates the instance number(0~47) of the sub-dataset in the HOLO dataset.
+`<instance>` indicates the instance number (0~47) of the sub-dataset in the HOLO dataset.
 
 We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. 
 To see part of the results, run the command:
