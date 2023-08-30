@@ -66,10 +66,10 @@ class Solver(object):
 
         self.__dict__.update(Solver.DEFAULTS, **config)
 
-        self.train_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='train', dataset=self.dataset, )
-        self.vali_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='val', dataset=self.dataset)
-        self.test_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='test', dataset=self.dataset)
-        self.thre_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='thre', dataset=self.dataset)
+        self.train_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='train', dataset=self.dataset, instance = self.instance )
+        self.vali_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='val', dataset=self.dataset, instance = self.instance)
+        self.test_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='test', dataset=self.dataset, instance = self.instance)
+        self.thre_loader = get_loader_segment(self.index, 'dataset/'+self.data_path, batch_size=self.batch_size, win_size=self.win_size, mode='thre', dataset=self.dataset, instance = self.instance)
 
         self.build_model()
         
@@ -337,10 +337,9 @@ class Solver(object):
         precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary')
         print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(accuracy, precision, recall, f_score))
         
-        if self.data_path == 'UCR' or 'UCR_AUG':
-            import csv
-            with open('result/'+self.data_path+'.csv', 'a+') as f:
-                writer = csv.writer(f)
-                writer.writerow(matrix)
+        import csv
+        with open(self.result_save_path, 'a+') as f:
+            writer = csv.writer(f)
+            writer.writerow(matrix)
 
         return accuracy, precision, recall, f_score

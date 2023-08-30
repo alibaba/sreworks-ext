@@ -6,12 +6,12 @@ In this paper, we advance the benchmarking of time series anomaly detection from
 ## 1、Datasets
 <a name="T1rHA"></a>
 ### 1.1 Real-world Hologres AIOps Dataset
-The Hologres Datasets are on [https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563](https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563) <br />For each instance, a csv file is given. The train dataset and test dataset in each instance should be split evenly through all the timestamps.
+The Hologres Datasets are on [https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563](https://figshare.com/articles/dataset/_b_BigDataAD_Benchmark_Dataset_b_/24040563) <br />For each instance, a CSV file is given. The train dataset and test dataset in each instance should be split evenly through all the timestamps.
 
 - Illustration of the collection of Hologres AIOps dataset
 
 ![](img/system_structure.png)
-All the metrics and labels in our dataset are derived from real-world scenarios. All metrics were obtained from the Hologres instance monitoring system and cover a rich variety of metric types, including **CPU usage, queries per second (QPS) and latency**, which are related to many important modules within Hologres. We obtain labels from the ticket system, which integrates three main sources of instance anomalies: user service requests, instance unavailability and fault simulations . User service requests refer to tickets that are submitted directly by users, whereas instance unavailability is typically detected through existing monitoring tools or discovered by Site Reliability Engineers (SREs). Since the system is usually very stable, we augment the anomaly samples by conducting fault simulations. Fault simulation refers to a special type of anomaly, planned beforehand, which is introduced to the system to test its performance under extreme conditions. All records in the ticket system are subject to follow-up processing by engineers, who meticulously mark the start and end times of each ticket. This rigorous approach ensures the accuracy of the labels in our dataset. 
+All the metrics and labels in our dataset are derived from real-world scenarios. All metrics were obtained from the Hologres instance monitoring system and cover a rich variety of metric types, including **CPU usage, queries per second (QPS) and latency**, which are related to many important modules within Hologres. We obtain labels from the ticket system, which integrates three main sources of instance anomalies: user service requests, instance unavailability and fault simulations. User service requests refer to tickets that are submitted directly by users, whereas instance unavailability is typically detected through existing monitoring tools or discovered by Site Reliability Engineers (SREs). Since the system is usually very stable, we augment the anomaly samples by conducting fault simulations. Fault simulation refers to a special type of anomaly, planned beforehand, which is introduced to the system to test its performance under extreme conditions. All records in the ticket system are subject to follow-up processing by engineers, who meticulously mark the start and end times of each ticket. This rigorous approach ensures the accuracy of the labels in our dataset. 
 
 - Statistic Characteristic of Hologres AIOps Datasets
 
@@ -66,10 +66,10 @@ All the metrics and labels in our dataset are derived from real-world scenarios.
 | instance46 | 167952 | 25 | 2 | 0.001% |
 | instance47 | 167958 | 30 | 26 | 0.015% |
 
-Due to Alibaba Internal Data Exposure Policy, we delete all data's timestamp and column name.<br />The last column of every instance file is anomaly label, other columns are different system metrics.
+Due to Alibaba Internal Data Exposure Policy, we delete all data's timestamps and column names.<br />The last column of every instance file is the anomaly label, other columns are different system metrics.
 <a name="aCTNS"></a>
 ### 1.2 Public Datasets
-You can download the Public Datasets through the following url: [https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing](https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing)
+You can download the Public Datasets through the following URL: [https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing](https://drive.google.com/drive/folders/1RaIJQ8esoWuhyphhmMaH-VCDh-WIluRR?usp=sharing)
 <a name="xA92t"></a>
 ## 2、Evaluation Metrics
 The Evaluation Metrics we considered are:
@@ -82,25 +82,25 @@ The Evaluation Metrics we considered are:
 - Affiliation Score
 - Volume Under the Surface (VUS) Metric
 
-For more details, see metrics files in：
+For more details, see the metrics files in：
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/main/evaluation
 ```
 
 <a name="Om1HR"></a>
 ## 3、Models
-Methods included are shown below:
+The methods included are shown below:
 
 - **Classics**
    - **Local Outlier Factor (LOF):** LOF measures the local deviation of the density of a given sample with respect to its neighbors.
    - **K-Nearest Neighbors (KNN):** KNN views the anomaly score of the input instance as the distance to its $k$-th nearest neighbor.
    - **Isolation Forest (IForest):** IForest isolates observations by randomly selecting a feature and then randomly selecting a split value between the maximum and minimum values of the selected feature.
    - **Long short-term memory (LSTM): **LSTM is among the family of RNNs and LSTM \citet{hochreiter1997long} and can be effectively deployed in the TSAD problem, where the anomalies are detected by the deviation between the predicted and actual ones.
-   - **LSTM based autoencoder (LSTM-AE):** reconstructs input sequence and regards samples with high reconstruction errors as anomalies. 
-   - **LSTM based variational autoencoder(LSTM-VAE):** combines the power of both the LSTM-based model and VAE-based model, which learns to encode the input sequence into a lower-dimensional latent space representation and then decodes it back to reconstruct the original sequence. Similar to LSTM-AE, the reconstruction errors between the input sequence and the reconstructed ones are defined as anomaly scores.
+   - **LSTM-based autoencoder (LSTM-AE):** reconstructs input sequence and regards samples with high reconstruction errors as anomalies. 
+   - **LSTM-based variational autoencoder(LSTM-VAE):** combines the power of both the LSTM-based model and VAE-based model, which learns to encode the input sequence into a lower-dimensional latent space representation and then decodes it back to reconstruct the original sequence. Similar to LSTM-AE, the reconstruction errors between the input sequence and the reconstructed ones are defined as anomaly scores.
    - **Deep Support Vector Data Description (DeepSVDD):** DeepSVDD trains a neural network while minimizing the volume of a hypersphere that encloses the network representations of the data, forcing the network to extract the common factors of variation.
-   - **Copula Based Outlier Detector (COPOD):** COPOD is a hyperparameter-free, highly interpretable anomaly detection algorithm based on empirical copula models.
-   - **Empirical-Cumulative-distribution-based Outlier Detection (ECOD):** ECOD is a hyperparameter-free, highly interpretable anomaly detection algorithm based on empirical CDF functions. Basically, it uses ECDF to estimate the density of each feature independently, and assumes that the anomaly locates the tails of the distribution.
+   - **Copula-Based Outlier Detector (COPOD):** COPOD is a hyperparameter-free, highly interpretable anomaly detection algorithm based on empirical copula models.
+   - **Empirical-Cumulative-distribution-based Outlier Detection (ECOD):** ECOD is a hyperparameter-free, highly interpretable anomaly detection algorithm based on empirical CDF functions. Basically, it uses ECDF to estimate the density of each feature independently and assumes that the anomaly locates the tails of the distribution.
 - **AnomalyTransformer**
    - **Anomaly Transformer** is a representation of a series of explicit association modelling work which detects anomalies by association discrepancy between a learned Gaussian kernel and attention weight distribution. 
 - **BeatGAN**
@@ -108,11 +108,11 @@ Methods included are shown below:
 - **DAGMM**
    - **Deep Autoencoding Gaussian Mixture Model (DAGMM):** DAGMM utilizes a deep autoencoder to generate a low-dimensional representation and reconstruction error for each input data point, which is further fed into a Gaussian Mixture Model (GMM).
 - **DCdetector**
-   - **DCdetector** is a dual attention contrastive representation learning framework whose motivation is similar to anomaly transformer but is concise as it does not contain a specially designed Gaussian Kernel or a MinMax learning strategy, nor a reconstruction loss. Contrastive representation learning help to distinguish anomalies from normal points. 
+   - **DCdetector** is a dual attention contrastive representation learning framework whose motivation is similar to anomaly transformer but is concise as it does not contain a specially designed Gaussian Kernel or a MinMax learning strategy, nor a reconstruction loss. Contrastive representation learning helps to distinguish anomalies from normal points. 
 - **USAD**
    - **UnSupervised Anomaly Detection (USAD): **USAD is based on adversely trained autoencoders to isolate anomalies while providing fast training.
 
-For methods we used, there are models file folders in:
+For the methods we used, there are model file folders in the:
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/models
 ```
@@ -140,19 +140,25 @@ We prepare three filling methods for data preprocessing: Mean, Linear Interpolat
 ```Bash
 sreworks-ext/aiops/AnomalyDetectionBenchmark/main/datafill_methods.ipynb
 ```
-You can also use your own filling method to process data.
+You can also use your own filling method to process the data.
 
 - Model Running
 
-To use models listed above:
+To use the models listed above:
 
 In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
 ```Bash
-python main.py --model <model>
+python main.py --model <model> --dataset <dataset> --instance <holo_instance> --result_save_path <result_save_path>
 ```
-where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN'.
+where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN.
 
-We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. You can run the command above to see part of results.
+`<dataset>` denotes the public datasets PSM', 'MSL', 'SMD', 'NIPS-TS-GECCO', 'NIPS-TS-SWAN', 'SMAP', and our proposed 'HOLO'.
+
+`<instance>` indicates the instance of the sub-dataset in the HOLO dataset.
+
+`<result_save_path>` represents the path to the CSV file where the results will be saved.
+
+We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. You can run the command above to see part of the results.
 
 - Result Analysis
 
@@ -1197,7 +1203,7 @@ affiliation recall, Range_AUC_ROC, Range_AUC_PR, VUS_ROC, VUS_PR, AUC_PR, and AU
     </tr>
 </table>
 
-*We also evaluate other methods for filling missing data with mean interpolation and linear interpolation. 
+*We also evaluate other methods for filling in missing data with mean interpolation and linear interpolation. 
 For more results details and analysis, see our paper **"Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets"**.
 
 ### License
@@ -1205,4 +1211,4 @@ Apache License
 Version 2.0, January 2004
 http://www.apache.org/licenses/
 
-See License file for more details.
+See the License file for more details.

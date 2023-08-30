@@ -75,16 +75,16 @@ class Solver(object):
 
         self.train_loader = get_loader_segment(self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size,
                                                mode='train',
-                                               dataset=self.dataset)
+                                               dataset=self.dataset, instance = self.instance)
         self.vali_loader = get_loader_segment(self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size,
                                               mode='val',
-                                              dataset=self.dataset)
+                                              dataset=self.dataset, instance = self.instance)
         self.test_loader = get_loader_segment(self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size,
                                               mode='test',
-                                              dataset=self.dataset)
+                                              dataset=self.dataset, instance = self.instance)
         self.thre_loader = get_loader_segment(self.data_path, dataname=self.dataname, batch_size=self.batch_size, win_size=self.win_size,
                                               mode='thre',
-                                              dataset=self.dataset)
+                                              dataset=self.dataset, instance = self.instance)
 
         self.build_model()
         
@@ -391,4 +391,9 @@ class Solver(object):
                 accuracy, precision,
                 recall, f_score))
 
+        import csv
+        with open(self.result_save_path, 'a+') as f:
+            writer = csv.writer(f)
+            writer.writerow(matrix)
+            
         return accuracy, precision, recall, f_score

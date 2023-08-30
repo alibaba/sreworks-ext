@@ -201,20 +201,20 @@ class SMDSegLoader(object):
 
         
 class HOLOSegLoader(object):
-    def __init__(self, data_path, win_size, step, mode="train"):
+    def __init__(self, data_path, win_size, step, mode="train", instance=14):
         self.mode = mode
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(data_path + "/train_fill.npy")
+        data = np.load(data_path + "/HOLO_"+str(instance)+"_train.npy")
         self.scaler.fit(data)
         data = self.scaler.transform(data)
-        test_data = np.load(data_path + "/test_fill.npy")
+        test_data = np.load(data_path + "/HOLO_"+str(instance)+"_test.npy")
         self.test = self.scaler.transform(test_data)
 
         self.train = data
         self.val = self.test
-        self.test_labels = np.load(data_path + "/test_label.npy")
+        self.test_labels = np.load(data_path + "/HOLO_"+str(instance)+"_test_label.npy")
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 
@@ -441,7 +441,7 @@ class NIPS_TS_Uni_SynSegLoader(object):
 
         
         
-def get_loader_segment(data_path, dataname, batch_size, win_size=100, step=100, mode='train', dataset='KDD'):
+def get_loader_segment(data_path, dataname, batch_size, win_size=100, step=100, mode='train', dataset='KDD', instance=14):
     if (dataset == 'SMD'):
         dataset = SMDSegLoader(data_path, win_size, step, mode)
     elif (dataset == 'MSL'):
@@ -451,7 +451,7 @@ def get_loader_segment(data_path, dataname, batch_size, win_size=100, step=100, 
     elif (dataset == 'PSM'):
         dataset = PSMSegLoader(data_path, win_size, 1, mode)
     elif (dataset == 'HOLO'):
-        dataset = HOLOSegLoader(data_path, win_size, 1, mode)
+        dataset = HOLOSegLoader(data_path, win_size, 1, mode, instance)
     elif (dataset == 'HOLOALL'):
         dataset = HOLOALLSegLoader(data_path, dataname, win_size, 1, mode)
     elif (dataset == 'NIPS-TS-Uni-Syn'):
