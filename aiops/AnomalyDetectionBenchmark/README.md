@@ -148,17 +148,19 @@ To use the models listed above:
 
 In `sreworks-ext/aiops/AnomalyDetectionBenchmark/main/`, run:
 ```Bash
-python main.py --model <model_name> --dataset <public_dataset> --instance <holo_instance_num> --result_save_path <result_save_path>
+python main.py --model <model_name> --dataset <public_dataset> --instance <holo_instance_num>
 ```
 where `<model>` can be either of 'DCDetector', 'AnomalyTransformer', 'KNN', 'LOF', 'IForest', 'COPOD', 'ECOD', 'DeepSVDD', 'LSTM', 'LSTM_AE', 'LSTM_VAE', 'USAD', 'DAGMM', 'BeatGAN.
 
-`<dataset>` denotes the public datasets PSM', 'MSL', 'SMD', 'NIPS-TS-GECCO', 'NIPS-TS-SWAN', 'SMAP', and our proposed 'HOLO'.
+`<dataset>` denotes the public datasets 'PSM', 'MSL', 'SMD', 'NIPS-TS-GECCO', 'NIPS-TS-SWAN', 'SMAP', and our proposed 'HOLO'.
 
-`<instance>` indicates the instance of the sub-dataset in the HOLO dataset.
+`<instance>` indicates the instance number(0~47) of the sub-dataset in the HOLO dataset.
 
-`<result_save_path>` represents the path to the CSV file where the results will be saved.
-
-We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. You can run the command above to see part of the results.
+We have already put one of the public datasets and a preprocessed instance of our datasets in the datasets folder. 
+To see part of the results, run the command:
+```Bash
+python main.py --model DAGMM --dataset MSL --instance 15
+```
 
 - Result Analysis
 
