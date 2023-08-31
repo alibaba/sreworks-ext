@@ -300,7 +300,8 @@ class Solver(object):
         pred = (test_energy > thresh).astype(int)
         gt = test_labels.astype(int)
         
-        matrix = [self.index]
+        matrix = [str(self.dataset)]
+        matrix.append(self.instance)
         scores_simple = combine_all_evaluation_scores(pred, gt, test_energy)
         for key, value in scores_simple.items():
             matrix.append(value)
