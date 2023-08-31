@@ -19,12 +19,13 @@ parser.add_argument('--dataset', metavar='-d', type=str, required=False, default
 parser.add_argument('--instance', metavar='-i', type=str, required=False, default='15', help='instance number')
 
 # only for Anomaly-transformer and DCdetector
-parser.add_argument('--num_epochs', type=int, default=3)
-parser.add_argument('--batch_size', type=int, default=128)
-parser.add_argument('--input_c', type=int, default=55)
-parser.add_argument('--output_c', type=int, default=55) 
-parser.add_argument('--anormly_ratio', type=float, default=1.0)
-parser.add_argument('--result_save_path', type=str, default='result/result.csv')
+parser.add_argument('--num_epochs', type=int, default=3, help='num_epochs')
+parser.add_argument('--batch_size', type=int, default=128, help='batch_size')
+parser.add_argument('--input_c', type=int, default=55, help='input feature number')
+parser.add_argument('--output_c', type=int, default=55, help='output feature number') 
+parser.add_argument('--anormly_ratio', type=float, default=1.0, help='default anomaly ratio')
+parser.add_argument('--data_path', type=str, default='../datasets/holo/fillzero_std/instance15', help='input data_path')
+parser.add_argument('--result_save_path', type=str, default='../result/result.csv', help='result save path')
 
 # other models' parameters
 parser.add_argument('--holo_datafolder', type=str, default='../../datasets/holo/fillzero_std',help='holo_datafolder')
@@ -40,11 +41,11 @@ config_command += f' --public_datafolder {config.public_datafolder} --holo_dataf
 config_command += f' --dataset {config.dataset} --instance {config.instance}'
 
 if config.model == 'DCDetector':
-    command =  "python main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode train " + " --data_path " + config.dataset + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
-    command2 = "python main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode test " +  " --data_path " + config.dataset + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
+    command =  "python ../models/DCdetector/main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode train " + " --data_path " + config.data_path + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
+    command2 = "python ../models/DCdetector/main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode test " +  " --data_path " + config.data_path + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
 elif config.model == 'AnomalyTransformer':
-    command =  "python main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode train " + " --data_path " + config.dataset + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
-    command2 = "python main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode test " +  " --data_path " + config.dataset + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
+    command =  "python ../models/AnomalyTransformer/main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode train " + " --data_path " + config.data_path + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
+    command2 = "python ../models/AnomalyTransformer/main.py" + " --anormly_ratio " + str(config.anormly_ratio) + " --num_epochs " + str(config.num_epochs) + " --dataset " + config.dataset + " --batch_size " + str(config.batch_size)  + " --mode test " +  " --data_path " + config.data_path + " --input_c " + str(config.input_c)  + " --output_c " + str(config.output_c) + " --result_save_path " + config.result_save_path + " --instance " + str(config.instance)
 elif config.model == 'ECOD':
     command = "python ../models/classic/main.py --model ECOD" + config_command
 elif config.model == 'USAD':
