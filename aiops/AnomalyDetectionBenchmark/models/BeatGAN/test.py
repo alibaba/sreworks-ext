@@ -77,7 +77,7 @@ def adjust_predicts(score, label,
         return predict
 
 opt = Options().parse()
-res_save_path = opt.savepath
+save_path = opt.savepath
 train_path = os.path.join(opt.dataroot, 'train.py')
 test_path = os.path.join(opt.dataroot, 'test.py')
 label_path = os.path.join(opt.dataroot, 'test_label.npy')
@@ -130,9 +130,40 @@ with torch.no_grad():
     scores = combine_all_evaluation_scores(labels, pred, loss, opt.dataname)
     if savepath.contain('holo'):
         scores["instance"] = opt.dataroot.split('/')[-1]
+        is_pub = False
     else:
         scores["dataset"] = opt.dataroot.split('/')[-1]
+        is_pub = True
+    if os.path.exists(save_path):
+            exit(0)
+    if is_pub:
+        head = "dataset"
+    else:
+        head = "instance"
+    head_list = {
+        "model": "model",
+        head: "dataset",
+        "Affiliation precision": "Affiliation precision",
+        "Affiliation recall": "Affiliation recall",
+        "MCC_score": "MCC_score",
+        "R_AUC_PR": "R_AUC_PR",
+        "R_AUC_ROC": "R_AUC_ROC",
+        "VUS_PR": "VUS_PR",
+        "VUS_ROC": "VUS_ROC",
+        "f05_score_ori": "f05_score_ori",
+        "f1_score_c": "f1_score_c",
+        "f1_score_ori": "f1_score_ori",
+        "f1_score_pa": "f1_score_pa",
+        "pa_accuracy": "pa_accuracy",
+        "pa_f_score": "pa_f_score",
+        "pa_precision": "pa_precision",
+        "pa_recall": "pa_recall",
+        "point_auc": "point_auc",
+        "precision_k": "precision_k",
+        "range_auc": "range_auc",
+        "range_f_score": "range_f_score",
+    }
     print(scores)
-    with open(savepath, 'a',newline='') as f:
+    with open(save_path, 'a',newline='') as f:
         writer = csv.DictWriter(f,fieldnames=scores.keys())
         writer.writerow(scores)

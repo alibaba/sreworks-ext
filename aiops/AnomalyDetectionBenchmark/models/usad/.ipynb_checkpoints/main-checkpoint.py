@@ -88,95 +88,133 @@ param_grid = {
 
 #data_paths = [base_path + 'filllinear_std', base_path + 'fillmean_std', base_path + 'fillzero_std']
 
-data_paths = [os.path.join(public_datafolder, public_datasets), os.path.join(holo_datafolder, holo_datasets)]
+#data_paths = [os.path.join(public_datafolder, public_datasets), os.path.join(holo_datafolder, holo_datasets)]
 
+if config.dataset != 'holo':
+    is_pub = True
+    save_path = pub_result_file
+    path = os.path.join(public_datafolder, public_datasets)
+else:
+    is_pub = False
+    save_path = holo_result_file
+    path = os.path.join(holo_datafolder, holo_datasets)
 
-for i, path in enumerate(data_paths):
     
-    normal_path = os.path.join(path, 'train.npy')
-    attack_path = os.path.join(path, 'test.npy')
-    label_path = os.path.join(path, 'test_label.npy')
+normal_path = os.path.join(path, 'train.npy')
+attack_path = os.path.join(path, 'test.npy')
+label_path = os.path.join(path, 'test_label.npy')
 
-    normal = np.load(normal_path)
-    attack = np.load(attack_path)
-    for params in _generate_param_combinations(param_grid):
+normal = np.load(normal_path)
+attack = np.load(attack_path)
+for params in _generate_param_combinations(param_grid):
 
-        BATCH_SIZE = params['BATCH_SIZE']
-        N_EPOCHS = params['N_EPOCHS']
-        hidden_size = params['hidden_size']
-        window_size = params['window_size']
+    BATCH_SIZE = params['BATCH_SIZE']
+    N_EPOCHS = params['N_EPOCHS']
+    hidden_size = params['hidden_size']
+    window_size = params['window_size']
 
-        windows_normal=normal[np.arange(window_size)[None, :] + np.arange(normal.shape[0]-window_size + 1)[:, None]]
-        print(windows_normal.shape)
-        windows_attack=attack[np.arange(window_size)[None, :] + np.arange(attack.shape[0]-window_size + 1)[:, None]]
-        print(windows_attack.shape)
+    windows_normal=normal[np.arange(window_size)[None, :] + np.arange(normal.shape[0]-window_size + 1)[:, None]]
+    print(windows_normal.shape)
+    windows_attack=attack[np.arange(window_size)[None, :] + np.arange(attack.shape[0]-window_size + 1)[:, None]]
+    print(windows_attack.shape)
 
-        w_size=windows_normal.shape[1]*windows_normal.shape[2]
-        z_size=windows_normal.shape[1]*hidden_size
-
-
-        windows_normal_train = windows_normal[:int(np.floor(.8 *  windows_normal.shape[0]))]
-        windows_normal_val = windows_normal[int(np.floor(.8 *  windows_normal.shape[0])):int(np.floor(windows_normal.shape[0]))]
-
-        train_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
-            torch.from_numpy(windows_normal_train).float().view(([windows_normal_train.shape[0],w_size]))
-        ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
-
-        val_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
-            torch.from_numpy(windows_normal_val).float().view(([windows_normal_val.shape[0],w_size]))
-        ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
-
-        test_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
-            torch.from_numpy(windows_attack).float().view(([windows_attack.shape[0],w_size]))
-        ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
-
-        model = UsadModel(w_size, z_size)
-
-        model = to_device(model,device)
-
-        history = training(N_EPOCHS,model,train_loader,val_loader)
-
-        torch.save({
-                    'encoder': model.encoder.state_dict(),
-                    'decoder1': model.decoder1.state_dict(),
-                    'decoder2': model.decoder2.state_dict()
-                    }, "model.pth")
-
-        checkpoint = torch.load("model.pth")
-
-        model.encoder.load_state_dict(checkpoint['encoder'])
-        model.decoder1.load_state_dict(checkpoint['decoder1'])
-        model.decoder2.load_state_dict(checkpoint['decoder2'])
-
-        results=testing(model,test_loader)
-        loss=np.concatenate([torch.stack(results[:-1]).flatten().detach().cpu().numpy(),
-                                      results[-1].flatten().detach().cpu().numpy()])
-
-        resultsT=testing(model,train_loader)
-        lossT = np.concatenate([torch.stack(resultsT[:-1]).flatten().detach().cpu().numpy(),
-                                      resultsT[-1].flatten().detach().cpu().numpy()])
+    w_size=windows_normal.shape[1]*windows_normal.shape[2]
+    z_size=windows_normal.shape[1]*hidden_size
 
 
-        labels = np.load(label_path)[:len(loss)].flatten()
-        print(loss.shape, lossT.shape)
-        try:
-            lms = 0.9999
-            s = SPOT(1e-3)  # SPOT object
-            s.fit(lossT, loss)  # data import
-            s.initialize(level=0.999, min_extrema=False, verbose=False)  # initialization step
+    windows_normal_train = windows_normal[:int(np.floor(.8 *  windows_normal.shape[0]))]
+    windows_normal_val = windows_normal[int(np.floor(.8 *  windows_normal.shape[0])):int(np.floor(windows_normal.shape[0]))]
 
-            ret = s.run(dynamic=False)  # run
-            pot_th = np.mean(ret['thresholds']) * 1.0
-            print(pot_th)
-            pred, p_latency = adjust_predicts(loss, labels, pot_th, calc_latency=True)
-            loss = np.array(loss)
-            info = f"_{BATCH_SIZE}_{N_EPOCHS}_{hidden_size}_{window_size}"
-            scores = combine_all_evaluation_scores(labels, pred, loss, "usad" + info)
-            scores["instance"] = holo_datasets if i & 1 else public_datasets
-            print(scores)
-            tmp_path = holo_result_file if i & 1 else pub_result_file
-            with open(tmp_path,'a',newline='') as f:
-                writer = csv.DictWriter(f,fieldnames=scores.keys())
-                writer.writerow(scores)
-        except:
-            pass
+    train_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
+        torch.from_numpy(windows_normal_train).float().view(([windows_normal_train.shape[0],w_size]))
+    ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+
+    val_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
+        torch.from_numpy(windows_normal_val).float().view(([windows_normal_val.shape[0],w_size]))
+    ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+
+    test_loader = torch.utils.data.DataLoader(data_utils.TensorDataset(
+        torch.from_numpy(windows_attack).float().view(([windows_attack.shape[0],w_size]))
+    ) , batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+
+    model = UsadModel(w_size, z_size)
+
+    model = to_device(model,device)
+
+    history = training(N_EPOCHS,model,train_loader,val_loader)
+
+    torch.save({
+                'encoder': model.encoder.state_dict(),
+                'decoder1': model.decoder1.state_dict(),
+                'decoder2': model.decoder2.state_dict()
+                }, "model.pth")
+
+    checkpoint = torch.load("model.pth")
+
+    model.encoder.load_state_dict(checkpoint['encoder'])
+    model.decoder1.load_state_dict(checkpoint['decoder1'])
+    model.decoder2.load_state_dict(checkpoint['decoder2'])
+
+    results=testing(model,test_loader)
+    loss=np.concatenate([torch.stack(results[:-1]).flatten().detach().cpu().numpy(),
+                                  results[-1].flatten().detach().cpu().numpy()])
+
+    resultsT=testing(model,train_loader)
+    lossT = np.concatenate([torch.stack(resultsT[:-1]).flatten().detach().cpu().numpy(),
+                                  resultsT[-1].flatten().detach().cpu().numpy()])
+
+
+    labels = np.load(label_path)[:len(loss)].flatten()
+    print(loss.shape, lossT.shape)
+    try:
+        lms = 0.9999
+        s = SPOT(1e-3)  # SPOT object
+        s.fit(lossT, loss)  # data import
+        s.initialize(level=0.999, min_extrema=False, verbose=False)  # initialization step
+
+        ret = s.run(dynamic=False)  # run
+        pot_th = np.mean(ret['thresholds']) * 1.0
+        print(pot_th)
+        pred, p_latency = adjust_predicts(loss, labels, pot_th, calc_latency=True)
+        loss = np.array(loss)
+        info = f"_{BATCH_SIZE}_{N_EPOCHS}_{hidden_size}_{window_size}"
+        scores = combine_all_evaluation_scores(labels, pred, loss, "usad" + info)
+        if is_pub:
+            scores["instance"] = holo_datasets 
+        else:
+            scores["dataset"] = public_datasets
+        print(scores)
+        if os.path.exists(save_path):
+            return
+        if is_pub:
+            head = "dataset"
+        else:
+            head = "instance"
+        head_list = {
+            "model": "model",
+            head: "dataset",
+            "Affiliation precision": "Affiliation precision",
+            "Affiliation recall": "Affiliation recall",
+            "MCC_score": "MCC_score",
+            "R_AUC_PR": "R_AUC_PR",
+            "R_AUC_ROC": "R_AUC_ROC",
+            "VUS_PR": "VUS_PR",
+            "VUS_ROC": "VUS_ROC",
+            "f05_score_ori": "f05_score_ori",
+            "f1_score_c": "f1_score_c",
+            "f1_score_ori": "f1_score_ori",
+            "f1_score_pa": "f1_score_pa",
+            "pa_accuracy": "pa_accuracy",
+            "pa_f_score": "pa_f_score",
+            "pa_precision": "pa_precision",
+            "pa_recall": "pa_recall",
+            "point_auc": "point_auc",
+            "precision_k": "precision_k",
+            "range_auc": "range_auc",
+            "range_f_score": "range_f_score",
+        }
+        with open(save_path,'a',newline='') as f:
+            writer = csv.DictWriter(f,fieldnames=scores.keys())
+            writer.writerow(scores)
+    except:
+        pass

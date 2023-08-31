@@ -17,11 +17,20 @@ holo_datasets = "instance"+config.instance
 holo_result_file = config.holo_result_save_path
 pub_result_file = config.public_result_save_path
 
-data_paths = [os.path.join(public_datafolder, public_datasets), os.path.join(holo_datafolder, holo_datasets)]
+if config.dataset != 'holo':
+    is_pub = True
+    save_path = pub_result_file
+    datafolder = public_datafolder
+    dataset = public_datasets
+    path = os.path.join(public_datafolder, public_datasets)
+else:
+    is_pub = False
+    save_path = holo_result_file
+    datafolder = holo_datafolder
+    dataset = holo_datasets
+    path = os.path.join(holo_datafolder, holo_datasets)
 
-for i, path in enumerate(data_paths):
-    os.system(f"bash train.sh {path}")
-    if i & 1:
-        os.system(f"bash test.sh {path} {data} {holo_result_file}")
-    else:
-        os.system(f"bash test.sh {path} {data} {pub_result_file}")
+#data_paths = [os.path.join(public_datafolder, public_datasets), os.path.join(holo_datafolder, holo_datasets)]
+
+os.system(f"bash train.sh {path}")
+os.system(f"bash test.sh {path} {dataset} {save_path}")
