@@ -346,7 +346,8 @@ class Solver(object):
         np.save("events_pred.npy", pred)
         np.save("events_gt.npy", gt)
         
-        matrix = [] #[self.index]
+        matrix = [str(self.dataset)]
+        matrix.append(self.instance)
         scores_simple = combine_all_evaluation_scores(pred, gt, test_energy) ## all the metrics are calculated here 
         print(scores_simple)
         for key, value in scores_simple.items(): ## print all the metrics
