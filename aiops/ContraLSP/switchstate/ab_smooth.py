@@ -3,7 +3,6 @@ import os
 from pytorch_lightning.callbacks import EarlyStopping
 
 import sys
-sys.path.append('/Users/liuzichuan/Desktop/mytime')
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer, seed_everything
