@@ -77,7 +77,7 @@ class HDFSCluster():
     def get_local_disk_free(self, host: str):
         res = self.exec_command("df", host)
         return res['stdout']
-
+      
 
 if __name__ == "__main__":
     class_instance = HDFSCluster("47.93.25.211")
