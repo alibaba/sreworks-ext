@@ -8,7 +8,7 @@ from utils.utils import *
 from model.AnomalyTransformer import AnomalyTransformer
 from data_factory.data_loader import get_loader_segment
 from einops import rearrange
-from metrics.metrics import *
+from aiops.AnomalyDetectionBenchmark.main.evaluation.combine_all_scores import *
 import warnings
 warnings.filterwarnings('ignore')
 

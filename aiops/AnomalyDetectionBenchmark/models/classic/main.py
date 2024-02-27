@@ -19,7 +19,7 @@ from network import LSTM, LSTM_AE, LSTM_VAE
 from fit import fit_LSTM, fit_LSTM_AE, fit_LSTM_VAE
 from eval import eval_LSTM, eval_LSTM_AE, eval_LSTM_VAE
 from spot import SPOT
-from metrics.combine_all_scores import combine_all_evaluation_scores
+from aiops.AnomalyDetectionBenchmark.main.evaluation.combine_all_scores import combine_all_evaluation_scores
 import csv
 
 

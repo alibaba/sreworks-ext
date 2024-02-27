@@ -7,7 +7,7 @@ import argparse
 import itertools
 
 
-from metrics.combine_all_scores import combine_all_evaluation_scores
+from aiops.AnomalyDetectionBenchmark.main.evaluation.combine_all_scores import combine_all_evaluation_scores
 
 from dagmm import DAGMM
 
