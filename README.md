@@ -25,9 +25,6 @@ SREWorks Development Resource Library serves as a comprehensive repository encom
 - `aibond`: A framework for operational applications under LLM large models using prompt libraries.
 
 # AIOPS
-The `aiops` directory contains specialized libraries designed to assist with AI-driven operations for intelligent system management. These libraries offer an array of functionalities ranging from anomaly detection to log clustering. Below are the descriptions of the key libraries within this directory:
-
-- [AnomalyDetectionBenchmark](./aiops/AnomalyDetectionBenchmark) : Benchmarking Multivariate Time Series Anomaly Detection with Large-Scale Real-World Datasets
-
+The `aiops` directory contains specialized libraries designed to assist with AI-driven operations for intelligent system management. These libraries offer an array of functionalities ranging from anomaly detection to log clustering. 
 # License
 This project is licensed under the Apache License 2.0 - see the [LICENSE](./LICENSE) file for details.
