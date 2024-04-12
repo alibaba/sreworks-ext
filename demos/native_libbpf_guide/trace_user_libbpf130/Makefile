@@ -11,6 +11,7 @@ CFLAGS += -iquote ./helpers/
 CFLAGS += -iquote ./include/
 CFLAGS += -I./tools/lib/
 CFLAGS += -I./tools/include/
+CFLAGS += -I./tools/include/uapi/
 
 comma   := ,
 dot-target = $(dir $@).$(notdir $@)
