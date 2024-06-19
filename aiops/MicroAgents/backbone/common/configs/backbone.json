@@ -1,0 +1,10 @@
+{
+"qwen":{
+    "llm_name":"qwen",
+    "temperature": 1.0,
+    "top_p": 0.2,
+    "max_tokens": 2000,
+    "stop": null
+}
+
+}

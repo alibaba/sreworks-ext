@@ -1,0 +1,16 @@
+<<<<<<< HEAD
+.ipynb_checkpoints/
+.vscode/
+.train-ticket.wiki/
+**/__pycache__/
+**/.ipynb_checkpoints/
+common/configs/key.json
+data/nezha/
+
+=======
+.DS_Store
+*.pyc
+.ipynb_checkpoints/*
+.idea/*
+__pycache__/*
+>>>>>>> 33a63f47a9ef7cce4a252cf788503dc1426f0cc6
