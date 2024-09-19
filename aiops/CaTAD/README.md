@@ -1,6 +1,6 @@
 # Unveiling Time Series Anomaly Detection: A Causal Look and Solutions
 
-This repo provides the implementation code corresponding to our paper entitled Unveiling Time Series Anomaly Detection: A Causal Look and Solutions. The code is implemented on Pytorch 1.10.2 on a server with NVIDIA A100.
+This repo provides the implementation code corresponding to our paper entitled Unveiling Time Series Anomaly Detection: A Causal Perspective and Solutions. The code is implemented on Pytorch 1.10.2 on a server with NVIDIA A100.
 
 ![image](./img/framework.png)
 
@@ -19,7 +19,7 @@ CaTAD uses the following dependencies:
 We evaluate the proposed model on seven real-world datasets from different domains:
 
 - **Public Datasets**: MSL, SMD, PSM, WADI
-- **Cloud Services Datasets**: Cloud-B, ODPS-SH, ODPS-Y
+- **Cloud Services Datasets**: Cloud-B, ODPS-S, ODPS-Y
 
 ### Preparation
 Ensure dataset folders are placed under `./data/`.
