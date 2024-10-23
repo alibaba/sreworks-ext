@@ -8,7 +8,7 @@ import time
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from models.CaTAD import CaTAD
+from models.CaPulse import CaPulse
 from torch.nn.utils import clip_grad_value_
 import numpy as np
 from sklearn.metrics import roc_auc_score, f1_score
@@ -23,20 +23,22 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, default='./data/', help='Location of datasets.')
 parser.add_argument('--dataset', type=str, default='SMD', help='The dataset name.')            
 parser.add_argument('--output_dir', type=str, default='./checkpoint/')
-parser.add_argument('--name',default='CaTAD')
+parser.add_argument('--name',default='CaPulse')
 parser.add_argument('--mode', type=str, default='train')
 parser.add_argument('--log_dir',default='./log/')
 parser.add_argument('--seed_list', type=list, default=[2018,2019,2020,2021,2022], help='Random seed to use.')
 
-#
-parser.add_argument('--use_multidim', type=str_to_bool, default=True)
+
 
 # parameters
 parser.add_argument('--n_blocks', type=int, default=5, help='Number of blocks PeNF to stack.')
 parser.add_argument('--hidden_size', type=int, default=32, help='Hidden layer size.')
 parser.add_argument('--n_layers', type=int, default=2, help='Number of hidden layers.')
+parser.add_argument('--n_causes', type=int, default=10, help='Number of latent causal factors.')
+parser.add_argument('--use_multidim', type=str_to_bool, default=True, help='When applying NF, use multi dim or not.')
 parser.add_argument('--dropout', type=float, default=0.0)
 parser.add_argument('--batch_norm', type=bool, default=False)
+
 
 parser.add_argument('--alpha', type=float, default=0.01, help = 'Balance the loss')
 parser.add_argument('--beta', type=float, default=0.01, help = 'Balance the loss')
@@ -77,8 +79,9 @@ for seed in args.seed_list:
     if args.cuda:
         torch.cuda.manual_seed(seed)
     epoch = 0
-    model = CaTAD(args.n_blocks, 1, args.hidden_size, args.n_layers, dropout=args.dropout, 
-                    batch_norm=args.batch_norm, n_node=n_sensor, interve_level=args.interve_level, period=period, unit=unit, use_multidim=args.use_multidim)
+    model = CaPulse(args.n_blocks, 1, args.hidden_size, args.n_layers, dropout=args.dropout, 
+                    batch_norm=args.batch_norm, n_node=n_sensor, interve_level=args.interve_level, period=period, unit=unit, 
+                    use_multidim=args.use_multidim, n_causes=args.n_causes)
     model = model.to(device)
 
     loss_best = 100

@@ -8,9 +8,9 @@ import csv
 import ast
 from utils.helper import FFT_for_Period
 
-class CaTAD_Data(Dataset):
+class CaPulse_Data(Dataset):
     def __init__(self, df, label, window_size=60, stride_size=10, unit='s'):
-        super(CaTAD_Data, self).__init__()
+        super(CaPulse_Data, self).__init__()
         self.df = df
         self.window_size = window_size
         self.stride_size = stride_size
@@ -76,9 +76,9 @@ def load_wadi(root, batch_size, model):
     test_df = norm_feature.iloc[int(0.8*len(data)):]
     test_label = data.label.iloc[int(0.8*len(data)):]
     
-    train_loader = DataLoader(CaTAD_Data(train_df,train_label, unit='s'), batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(CaTAD_Data(val_df,val_label, unit='s'), batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(CaTAD_Data(test_df,test_label, unit='s'), batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(CaPulse_Data(train_df,train_label, unit='s'), batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(CaPulse_Data(val_df,val_label, unit='s'), batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(CaPulse_Data(test_df,test_label, unit='s'), batch_size=batch_size, shuffle=False)
 
 
     return train_loader, val_loader, test_loader, n_sensor, period, 's'
@@ -113,9 +113,9 @@ def load_psm(root, batch_size, model):
     test_df = norm_feature.iloc[int(0.8*len(data)):]
     test_label = data.label.iloc[int(0.8*len(data)):]
 
-    train_loader = DataLoader(CaTAD_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(CaTAD_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(CaTAD_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(CaPulse_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(CaPulse_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(CaPulse_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
 
 
     return train_loader, val_loader, test_loader, n_sensor, period, 'min'
@@ -153,9 +153,9 @@ def load_smd(root, batch_size, entity, model):
     test_label = data.label.iloc[int(0.8*len(data)):]
 
 
-    train_loader = DataLoader(CaTAD_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(CaTAD_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(CaTAD_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(CaPulse_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(CaPulse_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(CaPulse_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader, n_sensor, period, 'min'
 
@@ -208,9 +208,9 @@ def load_msl(root, batch_size, dataset, model):
     test_label = data.label.iloc[int(0.8*len(data)):]
 
 
-    train_loader = DataLoader(CaTAD_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(CaTAD_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(CaTAD_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(CaPulse_Data(train_df,train_label, unit='min'), batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(CaPulse_Data(val_df,val_label, unit='min'), batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(CaPulse_Data(test_df,test_label, unit='min'), batch_size=batch_size, shuffle=False)
 
 
     return train_loader, val_loader, test_loader, n_sensor, period, 'min'

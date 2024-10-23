@@ -1,17 +1,17 @@
-# Unveiling Time Series Anomaly Detection: A Causal Look and Solutions
+# CaPulse: Detecting Anomalies by Tuning in to the Causal Rhythms of Time Series
 
-This repo provides the implementation code corresponding to our paper entitled Unveiling Time Series Anomaly Detection: A Causal Perspective and Solutions. The code is implemented on Pytorch 1.10.2 on a server with NVIDIA A100.
+This repo provides the implementation code corresponding to our paper entitled CaPulse: Detecting Anomalies by Tuning in to the Causal Rhythms of Time Series. The code is implemented on Pytorch 1.10.2 on a server with NVIDIA A100.
 
 ![image](./img/framework.png)
 
 ## Description
-We introduce a causal perspective to uncover the underlying mechanisms driving anomalies in time series data. Building on this foundation, we leverage causal tools to develop a new framework, CaTAD, aimed at enhancing both the accuracy and interpretability of Time Series Anomaly Detection (TSAD). To address the inherent challenges in TSAD, we design specialized modules that capture and fuse latent causal factors across different period levels, effectively managing local periodic information. Additionally, we propose a novel mask mechanism integrated into Normalizing Flows to account for global periodicity, enabling unsupervised, density-based anomaly detection.
+We introduce a causal perspective to uncover the underlying mechanisms driving anomalies in time series data. Building on this foundation, we leverage causal tools to develop a new framework, **CaPulse**, aimed at enhancing both the accuracy and interpretability of Time Series Anomaly Detection (TSAD). To tackle the intrinsic challenges of data, i.e., label scarcity, data imbalance, and multiple periodicities, we propose Periodical Normalizing Flows, which are built on conditioned normalizing flows to enable unsupervised density-based anomaly detection. For capturing multi-period dynamics, CaPulse integrates different periods' local information by learning causal pyramid representations as conditioning inputs, and global period information is incorporated via a novel mask mechanism.
 
 ## Requirements
 
-CaTAD uses the following dependencies:
+CaPulse uses the following dependencies:
 
-- Pytorch 1.8.1 and its dependencies
+- Pytorch 1.10.2 and its dependencies
 - Numpy and Scipy
 - CUDA 11.1 or latest version, cuDNN
 
@@ -19,7 +19,7 @@ CaTAD uses the following dependencies:
 We evaluate the proposed model on seven real-world datasets from different domains:
 
 - **Public Datasets**: MSL, SMD, PSM, WADI
-- **Cloud Services Datasets**: Cloud-B, ODPS-S, ODPS-Y
+- **Cloud Services Datasets**: Cloud-B, Cloud-S, Cloud-Y
 
 ### Preparation
 Ensure dataset folders are placed under `./data/`.
@@ -69,10 +69,10 @@ GANF: https://github.com/EnyanDai/GANF
 
 Time-Series-Library: https://github.com/thuml/Time-Series-Library/
 
-## Citation
+<!-- ## Citation
 
 If you find our work useful in your research, please cite:
 
 ```
 Pending.
-```
+``` -->
