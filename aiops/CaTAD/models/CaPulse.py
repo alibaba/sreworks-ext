@@ -1,5 +1,3 @@
-
-#%%
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.fft
@@ -8,10 +6,10 @@ from layers.NF import PeriodNF
 from layers.embedding import Embedding
 from layers.conv import Inception_Block
 import torch
-from utils.helper import vector_aug, FFT_for_Period, causal_interve
+from utils.helper import FFT_for_Period, causal_interve
 
 class MultiPeriodEncoder(nn.Module):
-    def __init__(self, seq_len, top_k, d_model, d_ff, num_kernels):
+    def __init__(self, seq_len, top_k, d_model, d_ff, num_kernels, num_causes):
         super(MultiPeriodEncoder, self).__init__()
         self.seq_len = seq_len
         self.k = top_k
@@ -20,6 +18,8 @@ class MultiPeriodEncoder(nn.Module):
             nn.GELU(),
             Inception_Block(d_ff, d_model, num_kernels=num_kernels)
         )
+        self.linear_proj = nn.Linear(seq_len, num_causes)
+        self.num_causes = num_causes
     def forward(self, input):
         '''
         refer to Time-Series-Library https://github.com/thuml/Time-Series-Library/blob/main/models/TimesNet.py
@@ -39,20 +39,23 @@ class MultiPeriodEncoder(nn.Module):
                 length = self.seq_len 
                 out = input
             # reshape
-            out = out.reshape(b, length // period, period, n).permute(0, 3, 1, 2).contiguous()
+            out = out.reshape(b, length // period, period, n).permute(0, 3, 1, 2).contiguous() # out [512, 119, 8] --> [512, 1, 60, 8]
             out = self.conv(out)
             # reshape back
             out = out.permute(0, 2, 3, 1).reshape(b, -1, n)
-            feat_pyramid.append(out[:, :self.seq_len , :])
+            out = out[:, :self.seq_len , :] #(b, t, d)
+            out = self.linear_proj(out.permute(0,2,1)).permute(0,2,1) #(b, n_causes, dim_cause)
+            feat_pyramid.append(out)
         feat_pyramid = torch.stack(feat_pyramid, dim=-1)
+
         weight = F.softmax(weight, dim=1)
-        weight = weight.unsqueeze(1).unsqueeze(1).repeat(1, t, n, 1)
+        weight = weight.unsqueeze(1).unsqueeze(1).repeat(1, self.num_causes, n, 1)
         return feat_pyramid, weight
 
 class MultiPeriodFusion(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, hidden_size,n_causes):
         super(MultiPeriodFusion, self).__init__()
-        self.adaptive_fusion = PeriodFusionAttn(hidden_size*60, hidden_size)
+        self.adaptive_fusion = PeriodFusionAttn(hidden_size*n_causes, hidden_size)
 
     def forward(self, feat_pyramid, weight):
         feat1 = torch.sum(feat_pyramid * weight, -1)
@@ -60,10 +63,10 @@ class MultiPeriodFusion(nn.Module):
         output = 0.5*feat1 + 0.5*feat2
         return output
 
-class CaTAD(nn.Module):
+class CaPulse(nn.Module):
 
-    def __init__ (self, n_blocks, input_size, hidden_size, n_layers ,dropout, batch_norm, n_node, interve_level, period, unit, use_multidim):
-        super(CaTAD, self).__init__()
+    def __init__ (self, n_blocks, input_size, hidden_size, n_layers ,dropout, batch_norm, n_node, interve_level, period, unit, use_multidim, n_causes):
+        super(CaPulse, self).__init__()
         self.top_k = 3
         self.d_ff = 16
         self.num_kernels = 2
@@ -72,10 +75,11 @@ class CaTAD(nn.Module):
         self.n_layers=n_layers
         self.seq_len = 60
         self.interve_level = interve_level
-        
+        self.n_causes = n_causes
+
         self.embedding = Embedding(c_in=self.n_node, d_model=hidden_size, freq=unit, dropout=dropout)
-        self.feat_ext = MultiPeriodEncoder(seq_len=self.seq_len, top_k = self.top_k, d_model=hidden_size, d_ff=self.d_ff, num_kernels=self.num_kernels)
-        self.feat_fusion = MultiPeriodFusion(hidden_size)
+        self.feat_ext = MultiPeriodEncoder(seq_len=self.seq_len, top_k = self.top_k, d_model=hidden_size, d_ff=self.d_ff, num_kernels=self.num_kernels, num_causes=n_causes)
+        self.feat_fusion = MultiPeriodFusion(hidden_size,n_causes)
         self.layer_norm = nn.LayerNorm(hidden_size)
         self.proj = nn.Linear(hidden_size, self.n_node*hidden_size, bias=True)
         self.ST_ext = nn.ModuleList([
@@ -88,9 +92,10 @@ class CaTAD(nn.Module):
                                     for _ in range(self.n_layers)])
         self.use_multidim = use_multidim
         if use_multidim:
-            self.proj4nf = nn.Linear(n_node, 1, bias=True)
+            self.proj4nf = nn.Linear(n_node*n_causes, self.seq_len, bias=True)
             self.period_nf = PeriodNF(n_blocks, n_node, hidden_size, n_layers, period = period, cond_label_size=hidden_size, batch_norm=batch_norm)
         else:
+            self.proj4nf = nn.Linear(n_node*n_causes, self.seq_len*n_node, bias=True)
             self.period_nf = PeriodNF(n_blocks, 1, hidden_size, n_layers, period = period, cond_label_size=hidden_size, batch_norm=batch_norm)
 
     def forward(self, x, x_time):
@@ -98,6 +103,7 @@ class CaTAD(nn.Module):
         return neg_log_prob.mean(), cause, x_enc, x_aug
 
     def test(self, x, x_time):
+        # x: (n_sample, n_node, t, d)
         n_sample, n_node, t, d = x.shape
 
         x_enc = x.permute(0,2,1,3).squeeze() # x: (n_sample, t, n)
@@ -105,30 +111,31 @@ class CaTAD(nn.Module):
 
         ##### local multi-periods feature capture ######
         # embedding
-        enc_emb = self.embedding(x_enc, x_time)
+        enc_emb = self.embedding(x_enc, x_time)  # (n_sample, t, d_model)
         aug_emb = self.embedding(x_aug, x_time)
 
         # feature capture
         enc_pyramid, enc_weight = self.feat_ext(enc_emb)
         aug_pyramid, aug_weight = self.feat_ext(aug_emb)
 
-        enc_out = self.layer_norm(self.feat_fusion(enc_pyramid, enc_weight))
+        enc_out = self.layer_norm(self.feat_fusion(enc_pyramid, enc_weight)) # (n_sample, n_causes, dim_cause)
         aug_out = self.layer_norm(self.feat_fusion(aug_pyramid, aug_weight))
-        enc_out_proj = self.proj(enc_out + aug_out)
+        enc_out_proj = self.proj(enc_out + aug_out) # (n_sample, t, d_model) --> (n_sample, t, n_node * h_d)
 
-        h = enc_out_proj.reshape(n_sample, t, n_node, -1).permute(0,2,1,3)
+        h = enc_out_proj.reshape(n_sample, self.n_causes, n_node, -1).permute(0,2,1,3) # (b, n_node, n_causes, h_d) 
         for layer in self.ST_ext:
-            h = layer(h) # update by spatial temporal message interaction
+            h = layer(h) # (b, n_node, n_causes, h_d) 
+
 
         if self.use_multidim:
             x_nf = x.squeeze().permute(0,2,1).reshape(-1, n_node)
-            h_nf = self.proj4nf(h.permute(0,2,3,1)).squeeze().reshape(-1, h.shape[3])
+            h_nf = self.proj4nf(h.permute(0,3,1,2).reshape(n_sample,-1,n_node*self.n_causes)).squeeze().permute(0,2,1).reshape(-1,h.shape[3])
         else:
             x_nf = x.reshape((-1,d))
-            h_nf = h.reshape((-1,h.shape[3]))
+            h_nf = self.proj4nf(h.permute(0,3,1,2).reshape(n_sample,-1,n_node*self.n_causes)).squeeze().permute(0,2,1).reshape(-1,h.shape[3])
 
         log_prob = self.period_nf.log_prob(x_nf, h_nf).reshape([n_sample,-1])
         log_prob = log_prob.mean(dim=1)
 
-        return -log_prob, h.permute(0,2,1,3).reshape(n_sample*n_node, -1, t), enc_out, aug_out
+        return -log_prob, torch.mean(h, 1).reshape(n_sample, self.n_causes, -1), enc_out, aug_out
 
