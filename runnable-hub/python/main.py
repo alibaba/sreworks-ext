@@ -2,7 +2,10 @@
 
 from workers.processWorker.worker import Worker as ProcessWorker
 
+from runnable import RunnableHub
+
 
 if __name__ == "__main__":
 
-    ProcessWorker()
+    runnableHub = RunnableHub()
+    runnableHub.registerWorker(ProcessWorker())
