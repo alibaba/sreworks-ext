@@ -2,17 +2,18 @@
 
 from fastapi import FastAPI
 import uvicorn
-import asyncio
+
 # from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.worker import Worker as ApiWorker
 from workers.apiWorker.request.apiRequest import ApiRequest
 from runnable import RunnableHub
+from runnable.store import RunnableLocalStore
 
 
 app = FastAPI()
 
 
-@app.post("/API_WORKER")
+@app.post("/API")
 def apiWorker(request: ApiRequest):
     context = app.state.runnableHub.executeStart(request)
     return {
@@ -22,7 +23,7 @@ def apiWorker(request: ApiRequest):
 
 @app.on_event("startup")
 async def startup_event():
-    runnableHub = RunnableHub()
+    runnableHub = RunnableHub(store=RunnableLocalStore("/tmp/"))
     runnableHub.registerWorker(ApiWorker())
     app.state.runnableHub = runnableHub
 

@@ -12,7 +12,7 @@ class Worker(RunnableWorker):
         print("processWorker init")
 
     @staticmethod
-    def make_response(response, resultFormat: ApiResultFormat):
+    def makeResponse(response, resultFormat: ApiResultFormat):
         if resultFormat == ApiResultFormat.JSON:
             return response.json()
         else:
@@ -23,7 +23,7 @@ class Worker(RunnableWorker):
         if context.request.method == "GET":
             async with aiohttp.ClientSession() as session:
                 async with session.get(context.request.url) as response:
-                    context.response = ApiResponse(data=self.make_response(response, context.request.resultFormat))
+                    context.response = ApiResponse(data=self.makeResponse(response, context.request.resultFormat))
                     context.status = RunnableStatus.SUCCESS
                     return context
         else:
