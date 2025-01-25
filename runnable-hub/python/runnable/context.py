@@ -10,7 +10,6 @@ class RunnableStatus(Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     SUCCESS = "SUCCESS"
-    FAIL = "FAIL"
     ERROR = "ERROR"
 
 class RunnableRequest(BaseModel):
