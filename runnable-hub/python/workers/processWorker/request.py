@@ -1,6 +1,6 @@
 
-from pydantic import BaseModel 
+from runnable import RunnableRequest
 
-class Request(BaseModel):
-    username: str
-    email: str
+class Request(RunnableRequest):
+    runnableCode: str = "PROCESS_WORKER"
+    
