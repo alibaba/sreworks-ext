@@ -36,6 +36,8 @@ class RunnableWorkerDispatch():
             print(context)
             context.status = RunnableStatus.RUNNING
             context = await self.worker.onNext(context)
+            if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
+                context.endTime = datetime.now()
             print(context)
             self.store.save(contextFile, context.model_dump_json())
 
