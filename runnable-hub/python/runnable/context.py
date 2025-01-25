@@ -29,3 +29,4 @@ class RunnableContext(BaseModel, Generic[T]):
     endTime: Optional[datetime] = None
     status: RunnableStatus
     errorMessage: Optional[str] = None
+    callDepth: int = 0

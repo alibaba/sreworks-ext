@@ -14,8 +14,8 @@ app = FastAPI()
 
 
 @app.post("/API")
-def apiWorker(request: ApiRequest):
-    context = app.state.runnableHub.executeStart(request)
+async def apiWorker(request: ApiRequest):
+    context = await app.state.runnableHub.executeStart(request)
     return {
         "request": context.request,
         "executeId": context.executeId
