@@ -6,6 +6,7 @@ import uvicorn
 # from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.worker import Worker as ApiWorker
 from workers.apiWorker.request.apiRequest import ApiRequest
+from workers.processWorker.request.processRequest import ProcessRequest
 from runnable import RunnableHub
 from runnable.store import RunnableLocalStore
 
@@ -20,6 +21,15 @@ async def apiWorker(request: ApiRequest):
         "request": context.request,
         "executeId": context.executeId
     }
+
+@app.post("/PROCESS")
+async def processWorker(request: ProcessRequest):
+    context = await app.state.runnableHub.executeStart(request)
+    return {
+        "request": context.request,
+        "executeId": context.executeId
+    }
+
 
 @app.on_event("startup")
 async def startup_event():
