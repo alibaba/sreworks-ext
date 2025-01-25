@@ -1,11 +1,31 @@
 #!/usr/bin/env python3
 
-from workers.processWorker.worker import Worker as ProcessWorker
-
+from fastapi import FastAPI
+import uvicorn
+import asyncio
+# from workers.processWorker.worker import Worker as ProcessWorker
+from workers.apiWorker.worker import Worker as ApiWorker
+from workers.apiWorker.request.apiRequest import ApiRequest
 from runnable import RunnableHub
 
 
-if __name__ == "__main__":
+app = FastAPI()
 
+
+@app.post("/API_WORKER")
+def apiWorker(request: ApiRequest):
+    context = app.state.runnableHub.executeStart(request)
+    return {
+        "request": context.request,
+        "executeId": context.executeId
+    }
+
+@app.on_event("startup")
+async def startup_event():
     runnableHub = RunnableHub()
-    runnableHub.registerWorker(ProcessWorker())
+    runnableHub.registerWorker(ApiWorker())
+    app.state.runnableHub = runnableHub
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -1,7 +1,7 @@
 from httpx import request
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
-from request.apiRequest import ApiRequest, ApiResultFormat
-from response import ApiResponse
+from .request.apiRequest import ApiRequest, ApiResultFormat
+from .response import ApiResponse
 import aiohttp
 
 class Worker(RunnableWorker):
@@ -23,7 +23,7 @@ class Worker(RunnableWorker):
         if context.request.method == "GET":
             async with aiohttp.ClientSession() as session:
                 async with session.get(context.request.url) as response:
-                    context.response = ApiResponse(data=await self.make_response(response, context.request.resultFormat))
+                    context.response = ApiResponse(data=self.make_response(response, context.request.resultFormat))
                     context.status = RunnableStatus.SUCCESS
                     return context
         else:
