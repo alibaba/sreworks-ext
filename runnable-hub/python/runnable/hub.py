@@ -15,6 +15,9 @@ class RunnableWorker(ABC):
     async def onNext(self, context: RunnableContext) -> RunnableContext:
         pass
 
+    # def execute(self, context: RunnableContext, req: RunnableRequest, name: str):
+    #     context.promise.resolve[name] = req
+
 
 class RunnableWorkerDispatch():
     worker: RunnableWorker
@@ -41,7 +44,7 @@ class RunnableWorkerDispatch():
             except Exception as e:
                 context.status = RunnableStatus.ERROR
                 context.errorMessage = str(e)
-                
+
             if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
                 context.endTime = datetime.now()
             print(context)
@@ -69,11 +72,9 @@ class RunnableHub():
             executeId=str(uuid.uuid4()),
             request=request, 
             response=None, 
-            promiseRunnable={}, 
-            promiseResult={}, 
             startTime=datetime.now(), 
             status=RunnableStatus.PENDING)
-        print(newContext) 
+        
         contextStorePath = self.getExecuteStorePath(newContext.executeId, "context.json")
         self.store.save(
             contextStorePath,
@@ -82,5 +83,5 @@ class RunnableHub():
         return newContext
     
     def executeCheck(self, executeId: str) -> RunnableContext:
-        result = RunnableContext(request=None, response=None, promiseRunnable={}, promiseResult={}, executeId=executeId, startTime=datetime.now(), status=RunnableStatus.PENDING)
+        result = RunnableContext(request=None, response=None, executeId=executeId, startTime=datetime.now(), status=RunnableStatus.PENDING)
         return result

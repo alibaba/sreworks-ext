@@ -5,6 +5,6 @@ from typing import List, Dict
 from processStep import ProcessStep
 
 class ProcessJob(BaseModel):
-    jobCode: str
+    jobId: str
     steps: List[ProcessStep]
-    needs: List[str]
+    needs: List[str] = []

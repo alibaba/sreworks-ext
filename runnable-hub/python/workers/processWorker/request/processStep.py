@@ -4,6 +4,6 @@ from pydantic import BaseModel
 from typing import List, Dict
 
 class ProcessStep(BaseModel):
-    stepCode: str
+    stepId: str
     runnableCode: str
     request: Dict

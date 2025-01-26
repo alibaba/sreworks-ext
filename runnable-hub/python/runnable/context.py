@@ -17,15 +17,20 @@ class RunnableRequest(BaseModel):
 
 class RunnableResponse(BaseModel):
     runnableCode: str
+    status: Optional[str] = None
+
+class RunnablePromise(BaseModel):
+    resolve: Dict[str, Dict] = {}
+    result: Dict[str, Dict] = {}
 
 class RunnableContext(BaseModel, Generic[T]):
     request: T
     response: Optional[RunnableResponse] = None
-    promiseRunnable: Dict[str, object] = {}
-    promiseResult: Dict[str, object] = {}
+    promise: RunnablePromise = RunnablePromise()
     executeId: str
     startTime: datetime
     endTime: Optional[datetime] = None
     status: RunnableStatus
     errorMessage: Optional[str] = None
     callDepth: int = 0
+    data: Dict = {}

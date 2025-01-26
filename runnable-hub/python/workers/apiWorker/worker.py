@@ -11,7 +11,7 @@ class Worker(RunnableWorker):
     Response = ApiResponse
 
     def __init__(self):
-        print("processWorker init")
+        pass
 
     @staticmethod
     async def makeResponse(response, resultFormat: ApiResultFormat):
