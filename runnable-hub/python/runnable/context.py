@@ -4,6 +4,8 @@ from typing import List, Dict, Optional, Generic, TypeVar
 from datetime import datetime
 from enum import Enum
 
+from pyparsing import ParseSyntaxException
+
 T = TypeVar('T')
 
 class RunnableStatus(Enum):
@@ -22,15 +24,22 @@ class RunnableResponse(BaseModel):
 class RunnablePromise(BaseModel):
     resolve: Dict[str, Dict] = {}
     result: Dict[str, Dict] = {}
+    reject: Dict[str, str] = {}
 
 class RunnableContext(BaseModel, Generic[T]):
     request: T
     response: Optional[RunnableResponse] = None
     promise: RunnablePromise = RunnablePromise()
     executeId: str
-    startTime: datetime
+    createTime: datetime
+    startTime: Optional[datetime] = None
     endTime: Optional[datetime] = None
     status: RunnableStatus
     errorMessage: Optional[str] = None
     callDepth: int = 0
     data: Dict = {}
+    runnableCode: str
+    parentRunnableCode: Optional[str] = None
+    parentExecuteId: Optional[str] = None
+    name: Optional[str] = None
+    storePath: str

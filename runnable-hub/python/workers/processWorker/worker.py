@@ -22,8 +22,8 @@ class Worker(RunnableWorker):
                 if len(job.steps) == 0:
                     raise RuntimeError(f"jobId {job.jobId} steps is empty")
                 context.data["runtime"][job.jobId] = {
-                    "needs": job.needs,
-                    "steps": job.steps,
+                    "needs": job.needs[:],
+                    "steps": job.steps[:],
                     "outputs": {},
                     "currentStepId": None,
                     "startTime": datetime.now(),
