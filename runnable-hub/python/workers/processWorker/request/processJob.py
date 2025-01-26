@@ -2,9 +2,9 @@
 
 from pydantic import BaseModel
 from typing import List, Dict
+from processStep import ProcessStep
 
 class ProcessJob(BaseModel):
     jobCode: str
-    runnableCode: str
-    request: Dict
-    dependencies: List[str]
+    steps: List[ProcessStep]
+    needs: List[str]

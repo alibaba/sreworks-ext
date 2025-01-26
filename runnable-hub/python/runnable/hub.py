@@ -35,7 +35,13 @@ class RunnableWorkerDispatch():
             context = RunnableContext[self.worker.Request].model_validate_json(self.store.read(contextFile))
             print(context)
             context.status = RunnableStatus.RUNNING
-            context = await self.worker.onNext(context)
+        
+            try:
+                context = await self.worker.onNext(context)
+            except Exception as e:
+                context.status = RunnableStatus.ERROR
+                context.errorMessage = str(e)
+                
             if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
                 context.endTime = datetime.now()
             print(context)
