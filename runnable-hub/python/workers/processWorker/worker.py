@@ -37,8 +37,6 @@ class Worker(RunnableWorker):
                     context.data["runtime"][job.jobId]["jobStatus"] = "PENDING"
                     context.data["runtime"][job.jobId]["stepStatus"] = "PENDING"
 
-        # finishCount = 0
-        # existError = False
         for jobId,job in context.data["runtime"].items():
             if job["jobStatus"] == "RUNNING":
 

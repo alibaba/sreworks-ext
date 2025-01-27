@@ -27,8 +27,7 @@ class RunnableHub():
         self.responses = {}
         self.store = store
 
-    # def getExecuteStorePath(self, executeId: str, fileName: str):
-        # return f"execute/{executeId}/{fileName}"
+
     @staticmethod
     def shortExecuteId(executeId):
         return executeId.split("-")[0]
