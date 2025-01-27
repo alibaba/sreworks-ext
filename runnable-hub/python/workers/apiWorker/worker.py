@@ -11,7 +11,7 @@ class Worker(RunnableWorker):
     Response = ApiResponse
 
     def __init__(self):
-        print("processWorker init")
+        pass
 
     @staticmethod
     async def makeResponse(response, resultFormat: ApiResultFormat):
@@ -20,22 +20,19 @@ class Worker(RunnableWorker):
         else:
             return await response.text()
 
-    async def onNext(self, context: RunnableContext[ApiRequest]) -> RunnableContext:
-        try:
-            if context.request.method == ApiHttpMethod.GET:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(context.request.url) as response:
-                        context.response = ApiResponse(data=await self.makeResponse(response, context.request.resultFormat))
-                        context.status = RunnableStatus.SUCCESS
-                        return context
-            else:
-                context.status = RunnableStatus.ERROR
-                context.errorMessage = "method not support"
-                return context
-        except Exception as e:
+    async def onNext(self, context: RunnableContext[ApiRequest, ApiResponse]) -> RunnableContext:
+        
+        if context.request.method == ApiHttpMethod.GET:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(context.request.url) as response:
+                    context.response = ApiResponse(data=await self.makeResponse(response, context.request.resultFormat))
+                    context.status = RunnableStatus.SUCCESS
+                    return context
+        else:
             context.status = RunnableStatus.ERROR
-            context.errorMessage = str(e)
+            context.errorMessage = "method not support"
             return context
+    
 
 
 

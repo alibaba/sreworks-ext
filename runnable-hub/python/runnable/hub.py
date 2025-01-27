@@ -6,6 +6,9 @@ import uuid
 from abc import ABC, abstractmethod
 from .context import RunnableRequest, RunnableContext, RunnableStatus
 from .store import RunnableStore
+from typing import Dict
+import os
+import traceback
 
 class RunnableWorker(ABC):
     runnableCode = None
@@ -16,65 +19,136 @@ class RunnableWorker(ABC):
         pass
 
 
-class RunnableWorkerDispatch():
-    worker: RunnableWorker
-    queue: asyncio.Queue
-    store: RunnableStore
-
-    def __init__(self, worker: RunnableWorker, queue: asyncio.Queue, store: RunnableStore):
-        self.worker = worker
-        self.queue = queue
-        self.store = store
-        asyncio.create_task(self.run())
-
-    async def run(self):
-        while True:
-            print(f"RunnableWorkerDispatch {self.worker.runnableCode} wait")
-            contextFile = await self.queue.get()
-            print(f"RunnableWorkerDispatch {self.worker.runnableCode} get message {contextFile}")
-            context = RunnableContext[self.worker.Request].model_validate_json(self.store.read(contextFile))
-            print(context)
-            context.status = RunnableStatus.RUNNING
-            context = await self.worker.onNext(context)
-            if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
-                context.endTime = datetime.now()
-            print(context)
-            self.store.save(contextFile, context.model_dump_json())
-
-
 class RunnableHub():
 
     def __init__(self, store: RunnableStore):
         self.workers = {}
+        self.requests = {}
+        self.responses = {}
         self.store = store
 
-    def getExecuteStorePath(self, executeId: str, fileName: str):
-        return f"execute/{executeId}/{fileName}"
+
+    @staticmethod
+    def shortExecuteId(executeId):
+        return executeId.split("-")[0]
 
     def registerWorker(self, worker: RunnableWorker):
         self.workers[worker.runnableCode] = RunnableWorkerDispatch(
             worker=worker,
             queue=asyncio.Queue(),
-            store=self.store
+            store=self.store,
+            hub=self
         )
+        self.requests[worker.runnableCode] = worker.Request
+        self.responses[worker.runnableCode] = worker.Response
 
-    async def executeStart(self, request: RunnableRequest) -> RunnableContext:
+    def readExecuteContext(self, storePath:str, runnableCode: str) -> RunnableContext:
+        return RunnableContext[self.requests[runnableCode], self.responses[runnableCode]].model_validate_json(self.store.read(f"{storePath}/context.json"))
+
+    async def executeStart(self, request: RunnableRequest, parentContext: RunnableContext|None = None, name: str|None = None) -> RunnableContext:
+        executeId=str(uuid.uuid4())
+        if parentContext is None:
+            storePath = f"execute/{executeId}"
+            parentExecuteId = None
+            parentRunnableCode = None
+            callDepth = 0
+        else:
+            storePath = f"{parentContext.storePath}/{self.shortExecuteId(executeId)}"
+            parentExecuteId = parentContext.executeId
+            parentRunnableCode = parentContext.runnableCode
+            callDepth = parentContext.callDepth + 1
+
         newContext = RunnableContext(
-            executeId=str(uuid.uuid4()),
+            executeId=executeId,
+            runnableCode=request.runnableCode,
             request=request, 
             response=None, 
-            promiseRunnable={}, 
-            promiseResult={}, 
-            startTime=datetime.now(), 
+            name=name,
+            callDepth=callDepth,
+            storePath=storePath,
+            parentExecuteId=parentExecuteId,
+            parentRunnableCode=parentRunnableCode,
+            createTime=datetime.now(), 
             status=RunnableStatus.PENDING)
-        print(newContext) 
-        contextStorePath = self.getExecuteStorePath(newContext.executeId, "context.json")
-        self.store.save(
-            contextStorePath,
-            newContext.model_dump_json())
-        await self.workers[newContext.request.runnableCode].queue.put(contextStorePath)
+        
+        self.store.save(f"{newContext.storePath}/context.json", newContext.model_dump_json())
+        await self.workers[newContext.runnableCode].queue.put(f"{newContext.storePath}/context.json|")
         return newContext
     
-    def executeCheck(self, executeId: str) -> RunnableContext:
-        result = RunnableContext(request=None, response=None, promiseRunnable={}, promiseResult={}, executeId=executeId, startTime=datetime.now(), status=RunnableStatus.PENDING)
-        return result
+    async def parentExecuteNext(self, context: RunnableContext):
+        if context.parentExecuteId is None or context.parentRunnableCode is None or context.name is None:
+            return
+        parentStorePath = os.path.dirname(context.storePath)
+        await self.workers[context.parentRunnableCode].queue.put(f"{parentStorePath}/context.json|{context.runnableCode}#{context.name}={self.shortExecuteId(context.executeId)}")
+
+    # def executeCheck(self, executeId: str) -> RunnableContext:
+    #     result = RunnableContext(request=None, response=None, executeId=executeId, runnableCode="test", startTime=datetime.now(), createTime=datetime.now(), status=RunnableStatus.PENDING)
+    #     return result
+
+class RunnableWorkerDispatch():
+    worker: RunnableWorker
+    queue: asyncio.Queue
+    store: RunnableStore
+    hub: RunnableHub
+
+    def __init__(self, worker: RunnableWorker, queue: asyncio.Queue, store: RunnableStore, hub: RunnableHub):
+        self.worker = worker
+        self.queue = queue
+        self.store = store
+        self.hub = hub
+        asyncio.create_task(self.run())
+
+    async def run(self):
+        while True:
+            print(f"RunnableWorkerDispatch {self.worker.runnableCode} wait")
+            message = await self.queue.get()
+            contextFile, callbacks = message.split("|", 1)
+            if callbacks != "":
+                print(f"RunnableWorkerDispatch {self.worker.runnableCode} get message {contextFile} with callback {callbacks}")
+            else:
+                print(f"RunnableWorkerDispatch {self.worker.runnableCode} get message {contextFile}")
+
+            context = RunnableContext[self.worker.Request, self.worker.Response].model_validate_json(self.store.read(contextFile))
+
+            if callbacks != "":
+                for callback in callbacks.split(","):
+                    # runnableCode#name=executeShortId
+                    runnableCodeAndName, executeShortId = callback.split('=', 1)
+                    callbackRunnableCode, name = runnableCodeAndName.split('#', 1)
+                    callbackContext = self.hub.readExecuteContext(f"{context.storePath}/{executeShortId}", callbackRunnableCode)
+                    if callbackContext.status == RunnableStatus.SUCCESS:
+                        context.promise.result[name] = callbackContext.response.model_dump() if callbackContext.response is not None else {"status": callbackContext.status.value}
+                    elif callbackContext.status == RunnableStatus.ERROR:
+                        context.promise.reject[name] = callbackContext.errorMessage if callbackContext.errorMessage is not None else ""
+                    else:
+                        print(f"context {context.storePath}/{executeShortId} not in finish status")
+
+
+            if context.status == RunnableStatus.PENDING:
+                context.startTime = datetime.now()
+                context.status = RunnableStatus.RUNNING
+            elif context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
+                print(f"context {context.executeId} has been finished, status={context.status}")
+                continue
+        
+            try:
+                context = await self.worker.onNext(context)
+            except Exception as e:
+                context.status = RunnableStatus.ERROR
+                context.errorMessage = f"Error: {str(e)}\nStack Trace:\n{traceback.format_exc()}"
+
+            # 执行器读取完成后将此结果置空
+            context.promise.result = {}
+
+            if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
+                context.endTime = datetime.now()
+                await self.hub.parentExecuteNext(context)
+            elif context.status == RunnableStatus.RUNNING:
+                todo = context.promise.resolve
+                while todo:
+                    name, req = todo.popitem()
+                    print(f"get todo {name} {req}")
+                    await self.hub.executeStart(self.hub.requests[req['runnableCode']](**req), context, name)
+
+            print(context)
+            self.store.save(contextFile, context.model_dump_json())

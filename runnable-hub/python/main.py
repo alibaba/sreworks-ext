@@ -5,7 +5,11 @@ import uvicorn
 
 # from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.worker import Worker as ApiWorker
+from workers.shellWorker.worker import Worker as ShellWorker
+from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.request.apiRequest import ApiRequest
+from workers.shellWorker.request.shellRequest import ShellRequest
+from workers.processWorker.request.processRequest import ProcessRequest
 from runnable import RunnableHub
 from runnable.store import RunnableLocalStore
 
@@ -21,10 +25,30 @@ async def apiWorker(request: ApiRequest):
         "executeId": context.executeId
     }
 
+@app.post("/SHELL")
+async def shellWorker(request: ShellRequest):
+    context = await app.state.runnableHub.executeStart(request)
+    return {
+        "request": context.request,
+        "executeId": context.executeId
+    }
+
+@app.post("/PROCESS")
+async def processWorker(request: ProcessRequest):
+    context = await app.state.runnableHub.executeStart(request)
+    return {
+        "request": context.request,
+        "executeId": context.executeId
+    }
+
+
 @app.on_event("startup")
 async def startup_event():
     runnableHub = RunnableHub(store=RunnableLocalStore("/tmp/"))
     runnableHub.registerWorker(ApiWorker())
+    runnableHub.registerWorker(ShellWorker())
+    runnableHub.registerWorker(ProcessWorker())
+    print(runnableHub.workers)
     app.state.runnableHub = runnableHub
 
 
