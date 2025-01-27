@@ -7,6 +7,7 @@ from enum import Enum
 from pyparsing import ParseSyntaxException
 
 T = TypeVar('T')
+R = TypeVar("R")
 
 class RunnableStatus(Enum):
     PENDING = "PENDING"
@@ -26,9 +27,9 @@ class RunnablePromise(BaseModel):
     result: Dict[str, Dict] = {}
     reject: Dict[str, str] = {}
 
-class RunnableContext(BaseModel, Generic[T]):
+class RunnableContext(BaseModel, Generic[T,R]):
     request: T
-    response: Optional[RunnableResponse] = None
+    response: Optional[R] = None
     promise: RunnablePromise = RunnablePromise()
     executeId: str
     createTime: datetime

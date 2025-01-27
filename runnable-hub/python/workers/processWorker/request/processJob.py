@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 from typing import List, Dict
-from processStep import ProcessStep
+from .processStep import ProcessStep
 
 class ProcessJob(BaseModel):
     jobId: str

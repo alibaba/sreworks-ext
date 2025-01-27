@@ -28,7 +28,7 @@ class Worker(RunnableWorker):
         stdout, stderr = await process.communicate()
         return process.returncode, stdout.decode(), stderr.decode()
 
-    async def onNext(self, context: RunnableContext[ShellRequest]) -> RunnableContext:
+    async def onNext(self, context: RunnableContext[ShellRequest, ShellResponse]) -> RunnableContext:
         
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(context.request.run.encode())

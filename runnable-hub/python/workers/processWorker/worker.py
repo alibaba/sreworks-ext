@@ -3,16 +3,18 @@ from datetime import datetime
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from .request.processRequest import ProcessRequest
 from .request.processStep import ProcessStep
+from .response import ProcessResponse
 
 class Worker(RunnableWorker):
 
     runnableCode = "PROCESS_WORKER"
     Request = ProcessRequest
+    Response = ProcessResponse
 
     def __init__(self):
         pass
 
-    def onNext(self, context: RunnableContext[ProcessRequest]) -> RunnableContext:
+    async def onNext(self, context: RunnableContext[ProcessRequest, ProcessResponse]) -> RunnableContext:
         
         if context.data.get("runtime") is None:
             context.data["runtime"] = {}
@@ -35,8 +37,8 @@ class Worker(RunnableWorker):
                     context.data["runtime"][job.jobId]["jobStatus"] = "PENDING"
                     context.data["runtime"][job.jobId]["stepStatus"] = "PENDING"
 
-        finishCount = 0
-        existError = False
+        # finishCount = 0
+        # existError = False
         for jobId,job in context.data["runtime"].items():
             if job["jobStatus"] == "RUNNING":
 
@@ -66,23 +68,15 @@ class Worker(RunnableWorker):
                     for checkJob in context.data["runtime"].values():
                         if jobId in checkJob["needs"]:
                             checkJob["needs"].remove(jobId)
-                        if len(checkJob["needs"]) == 0:
-                            checkJob["jobStatus"] = "RUNNING"
-                            checkJob["stepStatus"] = "RUNNING"
+                            if len(checkJob["needs"]) == 0 and checkJob["jobStatus"] == "PENDING":
+                                checkJob["jobStatus"] = "RUNNING"
+                                checkJob["stepStatus"] = "RUNNING"
 
-            elif job["jobStatus"] == "SUCCESS":
-                finishCount += 1
-            elif job["jobStatus"] == "ERROR":
-                finishCount += 1
-                existError = True
-            if job["jobStatus"] == "PENDING":
-                pass
-
-        if finishCount == len(context.data["runtime"]):
-            if existError:
-                context.status = RunnableStatus.ERROR
-            else:
-                context.status = RunnableStatus.SUCCESS
+        allStatus = set([r["jobStatus"] for r in context.data["runtime"].values()])
+        if allStatus == set(["SUCCESS"]):
+            context.status = RunnableStatus.SUCCESS
+        elif allStatus == set(["ERROR"]) or allStatus == set(["ERROR","SUCCESS"]):
+            context.status = RunnableStatus.ERROR
 
         return context
 

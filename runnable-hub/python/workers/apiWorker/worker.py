@@ -20,7 +20,7 @@ class Worker(RunnableWorker):
         else:
             return await response.text()
 
-    async def onNext(self, context: RunnableContext[ApiRequest]) -> RunnableContext:
+    async def onNext(self, context: RunnableContext[ApiRequest, ApiResponse]) -> RunnableContext:
         
         if context.request.method == ApiHttpMethod.GET:
             async with aiohttp.ClientSession() as session:
