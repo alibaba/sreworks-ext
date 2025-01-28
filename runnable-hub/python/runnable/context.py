@@ -20,7 +20,6 @@ class RunnableRequest(BaseModel):
 
 class RunnableResponse(BaseModel):
     runnableCode: str
-    status: Optional[str] = None
 
 class RunnablePromise(BaseModel):
     resolve: Dict[str, Dict] = {}

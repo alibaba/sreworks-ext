@@ -121,7 +121,7 @@ class RunnableWorkerDispatch():
                     callbackRunnableCode, name = runnableCodeAndName.split('#', 1)
                     callbackContext = self.hub.readExecuteContext(f"{context.storePath}/{executeShortId}", callbackRunnableCode)
                     if callbackContext.status == RunnableStatus.SUCCESS:
-                        context.promise.result[name] = callbackContext.response.model_dump() if callbackContext.response is not None else {"status": callbackContext.status.value}
+                        context.promise.result[name] = callbackContext.response.model_dump() if callbackContext.response is not None else {}
                     elif callbackContext.status == RunnableStatus.ERROR:
                         context.promise.reject[name] = callbackContext.errorMessage if callbackContext.errorMessage is not None else ""
                     else:

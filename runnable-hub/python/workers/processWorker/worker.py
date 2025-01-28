@@ -27,6 +27,7 @@ class Worker(RunnableWorker):
                     "needs": job.needs[:],
                     "steps": [step.model_dump() for step in job.steps],
                     "outputs": {},
+                    "errors": {},
                     "currentStepId": None,
                     "startTime": datetime.now(),
                 }
@@ -41,10 +42,14 @@ class Worker(RunnableWorker):
             if job["jobStatus"] == "RUNNING":
 
                 if context.promise.result.get(jobId) is not None:
-                    stepResult = context.promise.result[jobId]
                     job["outputs"][job["currentStepId"]] = context.promise.result[jobId]
                     job["currentStepId"] = None
-                    job["stepStatus"] = stepResult["status"]
+                    job["stepStatus"] = "SUCESS"
+                
+                elif context.promise.reject.get(jobId) is not None:
+                    job["stepStatus"] = "ERROR"
+                    job["currentStepId"] = None
+                    job["errors"][job["currentStepId"]] = context.promise.reject[jobId]
 
                 if job["currentStepId"] is not None: # job not finish
                     continue
