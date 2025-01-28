@@ -24,7 +24,7 @@ class Worker(RunnableWorker):
         
         if context.request.method == ApiHttpMethod.GET:
             async with aiohttp.ClientSession() as session:
-                async with session.get(context.request.url) as response:
+                async with session.get(context.request.url, headers=context.request.headers) as response:
                     context.response = ApiResponse(data=await self.makeResponse(response, context.request.resultFormat))
                     context.status = RunnableStatus.SUCCESS
                     return context

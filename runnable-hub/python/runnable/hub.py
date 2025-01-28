@@ -6,7 +6,7 @@ import uuid
 from abc import ABC, abstractmethod
 from .context import RunnableRequest, RunnableContext, RunnableStatus
 from .store import RunnableFileStore
-from typing import Dict, Type
+from typing import Dict
 import os
 import traceback
 
@@ -82,9 +82,11 @@ class RunnableHub():
         parentStorePath = os.path.dirname(context.storePath)
         await self.workers[context.parentRunnableCode].queue.put(f"{parentStorePath}/context.json|{context.runnableCode}#{context.name}={self.shortExecuteId(context.executeId)}")
 
-    # def executeCheck(self, executeId: str) -> RunnableContext:
-    #     result = RunnableContext(request=None, response=None, executeId=executeId, runnableCode="test", startTime=datetime.now(), createTime=datetime.now(), status=RunnableStatus.PENDING)
-    #     return result
+    async def executeWait(self, context: RunnableContext) -> RunnableContext:
+        while context.status not in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
+            await asyncio.sleep(1)
+            context = self.readExecuteContext(context.storePath, context.runnableCode)
+        return context
 
 class RunnableWorkerDispatch():
     worker: RunnableWorker
