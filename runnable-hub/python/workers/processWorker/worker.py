@@ -39,41 +39,42 @@ class Worker(RunnableWorker):
                     context.data["runtime"][job.jobId]["stepStatus"] = "PENDING"
 
         for jobId,job in context.data["runtime"].items():
-            if job["jobStatus"] == "RUNNING":
+            if job["jobStatus"] != "RUNNING":
+                continue
 
-                if context.promise.result.get(jobId) is not None:
-                    job["outputs"][job["currentStepId"]] = context.promise.result[jobId]
-                    job["currentStepId"] = None
-                    job["stepStatus"] = "SUCESS"
-                
-                elif context.promise.reject.get(jobId) is not None:
-                    job["stepStatus"] = "ERROR"
-                    job["currentStepId"] = None
-                    job["errors"][job["currentStepId"]] = context.promise.reject[jobId]
+            if context.promise.result.get(jobId) is not None:
+                job["outputs"][job["currentStepId"]] = context.promise.result[jobId]
+                job["currentStepId"] = None
+                job["stepStatus"] = "SUCESS"
+            
+            elif context.promise.reject.get(jobId) is not None:
+                job["stepStatus"] = "ERROR"
+                job["currentStepId"] = None
+                job["errors"][job["currentStepId"]] = context.promise.reject[jobId]
 
-                if job["currentStepId"] is not None: # job not finish
-                    continue
+            if job["currentStepId"] is not None: # job not finish
+                continue
 
-                if job["stepStatus"] == "ERROR":
-                    job["jobStatus"] = "ERROR"
-                    job["endTime"] = datetime.now()
-                    for checkJob in context.data["runtime"].values():
-                        checkJob["jobStatus"] = "ERROR"
-                        checkJob["endTime"] = datetime.now()
-                elif len(job["steps"]) > 0:
-                    step = job["steps"].pop(0)
-                    step["request"]["runnableCode"] = step["runnableCode"]
-                    job["currentStepId"] = step["stepId"]
-                    context.promise.resolve[jobId] = step["request"]
-                else:
-                    job["jobStatus"] = "SUCCESS"
-                    job["endTime"] = datetime.now()
-                    for checkJob in context.data["runtime"].values():
-                        if jobId in checkJob["needs"]:
-                            checkJob["needs"].remove(jobId)
-                            if len(checkJob["needs"]) == 0 and checkJob["jobStatus"] == "PENDING":
-                                checkJob["jobStatus"] = "RUNNING"
-                                checkJob["stepStatus"] = "RUNNING"
+            if job["stepStatus"] == "ERROR":
+                job["jobStatus"] = "ERROR"
+                job["endTime"] = datetime.now()
+                for checkJob in context.data["runtime"].values():
+                    checkJob["jobStatus"] = "ERROR"
+                    checkJob["endTime"] = datetime.now()
+            elif len(job["steps"]) > 0:
+                step = job["steps"].pop(0)
+                step["request"]["runnableCode"] = step["runnableCode"]
+                job["currentStepId"] = step["stepId"]
+                context.promise.resolve[jobId] = step["request"]
+            else:
+                job["jobStatus"] = "SUCCESS"
+                job["endTime"] = datetime.now()
+                for checkJob in context.data["runtime"].values():
+                    if jobId in checkJob["needs"]:
+                        checkJob["needs"].remove(jobId)
+                        if len(checkJob["needs"]) == 0 and checkJob["jobStatus"] == "PENDING":
+                            checkJob["jobStatus"] = "RUNNING"
+                            checkJob["stepStatus"] = "RUNNING"
 
         allStatus = set([r["jobStatus"] for r in context.data["runtime"].values()])
         if allStatus == set(["SUCCESS"]):
