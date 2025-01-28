@@ -7,7 +7,7 @@ class ToolDefine(BaseModel):
     toolCode: str
     toolVersion: str
     toolType: ToolType
-    payload: Dict
+    setting: Dict               # 工具配置
     inputSpec: Dict             # 输入变量结构
     outputSpec: Dict            # 输出变量结构
     inputMappingTemplate: str   # 输入变量映射模板,支持jinja2模板
