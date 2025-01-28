@@ -4,6 +4,6 @@ from runnable import RunnableResponse
 
 class ToolResponse(RunnableResponse):
     runnableCode: str = "TOOL_WORKER"
-    result: Dict
+    outputs: Dict
     errorMessage: str
     success: bool
