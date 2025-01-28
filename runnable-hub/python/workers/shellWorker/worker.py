@@ -1,4 +1,4 @@
-from httpx import request
+
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from .request.shellRequest import ShellRequest
 from .response import ShellResponse

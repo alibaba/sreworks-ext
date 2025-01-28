@@ -1,5 +1,5 @@
 
-from sys import stderr
+
 from runnable import RunnableResponse
 
 class ShellResponse(RunnableResponse):

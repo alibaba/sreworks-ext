@@ -11,7 +11,7 @@ from workers.apiWorker.request.apiRequest import ApiRequest
 from workers.shellWorker.request.shellRequest import ShellRequest
 from workers.processWorker.request.processRequest import ProcessRequest
 from runnable import RunnableHub
-from runnable.store import RunnableLocalStore
+from runnable.store import RunnableLocalFileStore
 
 
 app = FastAPI()
@@ -44,7 +44,7 @@ async def processWorker(request: ProcessRequest):
 
 @app.on_event("startup")
 async def startup_event():
-    runnableHub = RunnableHub(store=RunnableLocalStore("/tmp/"))
+    runnableHub = RunnableHub(store=RunnableLocalFileStore("/tmp/"))
     runnableHub.registerWorker(ApiWorker())
     runnableHub.registerWorker(ShellWorker())
     runnableHub.registerWorker(ProcessWorker())
