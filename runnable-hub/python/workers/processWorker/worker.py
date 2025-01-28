@@ -25,7 +25,7 @@ class Worker(RunnableWorker):
                     raise RuntimeError(f"jobId {job.jobId} steps is empty")
                 context.data["runtime"][job.jobId] = {
                     "needs": job.needs[:],
-                    "steps": job.steps[:],
+                    "steps": [step.model_dump() for step in job.steps],
                     "outputs": {},
                     "currentStepId": None,
                     "startTime": datetime.now(),
@@ -56,10 +56,10 @@ class Worker(RunnableWorker):
                         checkJob["jobStatus"] = "ERROR"
                         checkJob["endTime"] = datetime.now()
                 elif len(job["steps"]) > 0:
-                    step:ProcessStep = job["steps"].pop(0)
-                    step.request["runnableCode"] = step.runnableCode
-                    job["currentStepId"] = step.stepId
-                    context.promise.resolve[jobId] = step.request
+                    step = job["steps"].pop(0)
+                    step["request"]["runnableCode"] = step["runnableCode"]
+                    job["currentStepId"] = step["stepId"]
+                    context.promise.resolve[jobId] = step["request"]
                 else:
                     job["jobStatus"] = "SUCCESS"
                     job["endTime"] = datetime.now()
