@@ -4,5 +4,5 @@ from typing import Dict
 
 class ToolRequest(RunnableRequest):
     runnableCode: str = "TOOL_WORKER"
-    type: str
+    toolCode: str
     payload: Dict
