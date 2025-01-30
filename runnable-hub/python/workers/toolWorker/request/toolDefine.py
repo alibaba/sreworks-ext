@@ -1,14 +1,15 @@
 
 from pydantic import BaseModel
 from .toolType import ToolType
-from typing import Dict
+from .toolTemplate import ToolTemplate
+from .toolParamSpec import ToolParamSpec
+from typing import Dict, List
 
 class ToolDefine(BaseModel):
     toolCode: str
     toolVersion: str
     toolType: ToolType
-    setting: Dict               # 工具配置
-    inputSpec: Dict             # 输入变量结构
-    outputSpec: Dict            # 输出变量结构
-    inputMappingTemplate: str   # 输入变量映射模板,支持jinja2模板
-    outputMappingTemplate: str  # 输出变量映射模板,支持jinja2模板
+    setting: Dict                       # 工具配置
+    inputSpec: List[ToolParamSpec]      # 输入变量结构
+    outputSpec: List[ToolParamSpec]     # 输出变量结构
+    template: ToolTemplate              # 模板集合
