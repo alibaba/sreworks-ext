@@ -1,9 +1,19 @@
 
 from datetime import datetime
+from typing import Dict
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from .request.processRequest import ProcessRequest
 from .request.processStep import ProcessStep
 from .response import ProcessResponse
+from jinja2 import Environment
+from uuid import uuid4
+
+class OutputRender:
+    def __init__(self):
+        self.outputValueMap = {}
+    def __getattr__(self, name):
+        self.outputValueMap[name] = str(uuid4())[:8]+".txt"
+        return {"path":"$SHELL_RUN_PATH/" + self.outputValueMap[name]}
 
 class Worker(RunnableWorker):
 
@@ -12,7 +22,24 @@ class Worker(RunnableWorker):
     Response = ProcessResponse
 
     def __init__(self):
-        pass
+        self.jinjaNewEnv = Environment(
+            variable_start_string="${{",  # 使用 ${{ 作为变量开始标记
+            variable_end_string="}}",     # 使用 }} 作为变量结束标记
+        )
+
+    def make_worker_request(self, step, stepOutputs) -> Dict:
+        outputs = OutputRender()
+        if step.get("shell") is not None:
+            step["request"] = {
+                "runnableCode": "SHELL_WORKER",
+                "run": self.jinjaNewEnv.from_string(step["shell"]).render(outputs=outputs, steps=stepOutputs),
+                "outputs": outputs.outputValueMap,
+            }
+        else:
+            step["request"]["runnableCode"] = step["runnableCode"]
+        
+        return step
+
 
     async def onNext(self, context: RunnableContext[ProcessRequest, ProcessResponse]) -> RunnableContext:
         
@@ -48,9 +75,9 @@ class Worker(RunnableWorker):
                 job["stepStatus"] = "SUCESS"
             
             elif context.promise.reject.get(jobId) is not None:
-                job["stepStatus"] = "ERROR"
-                job["currentStepId"] = None
                 job["errors"][job["currentStepId"]] = context.promise.reject[jobId]
+                job["currentStepId"] = None
+                job["stepStatus"] = "ERROR"
 
             if job["currentStepId"] is not None: # job not finish
                 continue
@@ -62,8 +89,7 @@ class Worker(RunnableWorker):
                     checkJob["jobStatus"] = "ERROR"
                     checkJob["endTime"] = datetime.now()
             elif len(job["steps"]) > 0:
-                step = job["steps"].pop(0)
-                step["request"]["runnableCode"] = step["runnableCode"]
+                step = self.make_worker_request(job["steps"].pop(0), job["outputs"])
                 job["currentStepId"] = step["stepId"]
                 context.promise.resolve[jobId] = step["request"]
             else:
