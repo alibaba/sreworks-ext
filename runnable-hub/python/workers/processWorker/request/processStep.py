@@ -8,3 +8,4 @@ class ProcessStep(BaseModel):
     runnableCode: Optional[str] = None
     request: Optional[Dict] = None
     shell: Optional[str] = None
+    api: Optional[Dict|str] = None

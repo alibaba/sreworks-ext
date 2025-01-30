@@ -7,6 +7,7 @@ from .request.processStep import ProcessStep
 from .response import ProcessResponse
 from jinja2 import Environment
 from uuid import uuid4
+import json
 
 class OutputRender:
     def __init__(self):
@@ -35,6 +36,12 @@ class Worker(RunnableWorker):
                 "run": self.jinjaNewEnv.from_string(step["shell"]).render(outputs=outputs, steps=stepOutputs),
                 "outputs": outputs.outputValueMap,
             }
+        elif step.get("api") is not None:
+            if isinstance(step["api"], dict):
+                step["request"] = step["api"]
+            else:
+                step["request"] = json.loads(self.jinjaNewEnv.from_string(step["api"]).render(outputs=outputs, steps=stepOutputs))
+            step["request"]["runnableCode"] = "API_WORKER"
         else:
             step["request"]["runnableCode"] = step["runnableCode"]
         
