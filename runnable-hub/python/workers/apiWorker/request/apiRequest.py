@@ -10,3 +10,4 @@ class ApiRequest(RunnableRequest):
     method: ApiHttpMethod = ApiHttpMethod.GET
     resultFormat: ApiResultFormat = ApiResultFormat.JSON
     headers: Dict = {}
+    params: Dict = {}
