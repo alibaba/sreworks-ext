@@ -17,7 +17,7 @@ class Worker(RunnableWorker):
 
     async def onNext(self, context: RunnableContext[JinjaRequest, JinjaResponse]) -> RunnableContext:
         
-        rawResult = self.jinjaEnv.from_string(context.request.template).render(**context.request.data)
+        rawResult = self.jinjaEnv.from_string(context.request.template).render(data=context.request.data)
         if context.request.resultFormat == JinjaResultFormat.TEXT:
             context.response = JinjaResponse(result=rawResult)
             context.status = RunnableStatus.SUCCESS

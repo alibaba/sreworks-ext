@@ -20,21 +20,30 @@ requestYaml = """
       call:
         steps:
         - id: setting
-          data: 
-            domain: baidu.com
-          jinjaYaml:
-            url: https://cloudflare-dns.com/dns-query
-            method: GET
-            resultFormat: JSON
-            params:
-              name: {{ domain }}
-              type: A
+          jinja:
+            data: 
+              domain: baidu.com
+            resultFormat: TEXT
+            template: |
+              {
+                "url": "https://cloudflare-dns.com/dns-query",
+                "method": "GET",
+                "resultFormat": JSON,
+                "params":{
+                  "name": "{{ domain }}",
+                  "type": "A"
+                }
+              }
         - id: call
-          api: ${{ steps.setting.outputs | tojson }}
+          api: ${{ steps.setting.outputs }}
         - id: result
-          data: ${{ steps.call.outputs | tojson }}
-          jinjaYaml:
-            result: {{ data.test}}
+          jinja:
+            resultFormat: JSON
+            dataJson: ${{ steps.call.outputs.result }}
+            template: |
+              {
+                "test": "{{ result }}"
+              }
 
 
     
