@@ -18,20 +18,20 @@ from runnable.store import RunnableLocalFileStore
 
 requestYaml = """
     jobs:
-    - jobId: test
-      steps:
-      - stepId: testStep1
-        runnableCode: SHELL_WORKER
-        request:
-          run: |
-            uptime
-            sleep 1
-            uptime
-      - stepId: testStep2
-        runnableCode: SHELL_WORKER
-        request:
-          run: |
-            uptime
+      test:
+        steps:
+        - id: testStep1
+          runnableCode: SHELL_WORKER
+          request:
+            run: |
+              uptime
+              sleep 1
+              uptime
+        - id: testStep2
+          runnableCode: SHELL_WORKER
+          request:
+            run: |
+              uptime
     
 """
 

@@ -45,12 +45,10 @@ class Worker(RunnableWorker):
         
         if context.data.get("runtime") is None:
             context.data["runtime"] = {}
-            for job in context.request.jobs:
-                if job.jobId in context.data["runtime"]:
-                    raise RuntimeError(f"jobId {job.jobId} duplicated")
+            for jobId, job in context.request.jobs.items():
                 if len(job.steps) == 0:
-                    raise RuntimeError(f"jobId {job.jobId} steps is empty")
-                context.data["runtime"][job.jobId] = {
+                    raise RuntimeError(f"jobId {jobId} steps is empty")
+                context.data["runtime"][jobId] = {
                     "needs": job.needs[:],
                     "steps": [step.model_dump() for step in job.steps],
                     "outputs": {},
@@ -59,11 +57,11 @@ class Worker(RunnableWorker):
                     "startTime": datetime.now(),
                 }
                 if len(job.needs) == 0:
-                    context.data["runtime"][job.jobId]["jobStatus"] = "RUNNING"
-                    context.data["runtime"][job.jobId]["stepStatus"] = "RUNNING"
+                    context.data["runtime"][jobId]["jobStatus"] = "RUNNING"
+                    context.data["runtime"][jobId]["stepStatus"] = "RUNNING"
                 else:
-                    context.data["runtime"][job.jobId]["jobStatus"] = "PENDING"
-                    context.data["runtime"][job.jobId]["stepStatus"] = "PENDING"
+                    context.data["runtime"][jobId]["jobStatus"] = "PENDING"
+                    context.data["runtime"][jobId]["stepStatus"] = "PENDING"
 
         for jobId,job in context.data["runtime"].items():
             if job["jobStatus"] != "RUNNING":
@@ -90,7 +88,7 @@ class Worker(RunnableWorker):
                     checkJob["endTime"] = datetime.now()
             elif len(job["steps"]) > 0:
                 step = self.make_worker_request(job["steps"].pop(0), job["outputs"])
-                job["currentStepId"] = step["stepId"]
+                job["currentStepId"] = step["id"]
                 context.promise.resolve[jobId] = step["request"]
             else:
                 job["jobStatus"] = "SUCCESS"

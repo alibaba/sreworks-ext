@@ -17,16 +17,16 @@ from runnable.store import RunnableLocalFileStore
 
 requestYaml = """
     jobs:
-    - jobId: test
-      steps:
-      - stepId: testStep1
-        shell: |
-          echo "set output abc = 'hello world' "
-          echo "hello world" > ${{ outputs.abc.path }}
-      - stepId: testStep2
-        shell: |
-          echo "hhh"
-          echo ${{ steps.testStep1.outputs.abc }}
+      test:
+        steps:
+        - id: testStep1
+          shell: |
+            echo "set output abc = 'hello world' "
+            echo "hello world" > ${{ outputs.abc.path }}
+        - id: testStep2
+          shell: |
+            echo "hhh"
+            echo ${{ steps.testStep1.outputs.abc }}
     
 """
 
