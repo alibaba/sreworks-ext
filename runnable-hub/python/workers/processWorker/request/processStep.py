@@ -1,9 +1,14 @@
 
 
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class ProcessStep(BaseModel):
-    stepId: str
-    runnableCode: str
-    request: Dict
+    id: str
+    runnableCode: Optional[str] = None
+    request: Optional[Dict] = None
+
+    # Common node customization fields
+    shell: Optional[str] = None
+    api: Optional[Dict|str] = None
+    jinja: Optional[Dict] = None

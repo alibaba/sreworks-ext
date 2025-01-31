@@ -2,6 +2,11 @@
 
 from fastapi import FastAPI
 import uvicorn
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(current_dir))
 
 # from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.worker import Worker as ApiWorker
@@ -11,7 +16,7 @@ from workers.apiWorker.request.apiRequest import ApiRequest
 from workers.shellWorker.request.shellRequest import ShellRequest
 from workers.processWorker.request.processRequest import ProcessRequest
 from runnable import RunnableHub
-from runnable.store import RunnableLocalStore
+from runnable.store import RunnableLocalFileStore
 
 
 app = FastAPI()
@@ -44,7 +49,7 @@ async def processWorker(request: ProcessRequest):
 
 @app.on_event("startup")
 async def startup_event():
-    runnableHub = RunnableHub(store=RunnableLocalStore("/tmp/"))
+    runnableHub = RunnableHub(store=RunnableLocalFileStore("/tmp/"))
     runnableHub.registerWorker(ApiWorker())
     runnableHub.registerWorker(ShellWorker())
     runnableHub.registerWorker(ProcessWorker())

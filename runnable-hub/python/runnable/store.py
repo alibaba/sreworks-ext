@@ -1,21 +1,31 @@
 import os
-
+from typing import Dict, List
 from abc import ABC, abstractmethod
 
-class RunnableStore(ABC):
+class RunnableFileStore(ABC):
     @abstractmethod
-    def save(self, filePath, content):
+    def saveFile(self, filePath, content):
         pass
 
     @abstractmethod
-    def read(self, filePath) -> str:
+    def readFile(self, filePath) -> str:
         pass
 
-class RunnableLocalStore(RunnableStore):
+class RunnableDatabaseStore(ABC):
+    @abstractmethod
+    def queryRows(self, table:str, where:str) -> List[Dict]:
+        pass
+
+    @abstractmethod
+    def insertRows(self, table:str, data:List[Dict]) -> str:
+        pass
+
+
+class RunnableLocalFileStore(RunnableFileStore):
     def __init__(self, path):
         self.path = path
 
-    def save(self, filePath, content):
+    def saveFile(self, filePath, content):
         fullPath = os.path.join(self.path, filePath)
         print(fullPath)
         directory = os.path.dirname(fullPath)
@@ -28,7 +38,7 @@ class RunnableLocalStore(RunnableStore):
         with open(fullPath, 'w') as file:
             file.write(content)
 
-    def read(self, filePath) -> str:
+    def readFile(self, filePath) -> str:
         fullPath = os.path.join(self.path, filePath)
         
         # 检查文件是否存在

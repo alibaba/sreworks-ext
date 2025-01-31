@@ -15,12 +15,16 @@ class RunnableStatus(Enum):
     SUCCESS = "SUCCESS"
     ERROR = "ERROR"
 
+class RunnableOutputLoads(Enum):
+    JSON = "JSON"
+    TEXT = "TEXT"
+    YAML = "YAML"
+
 class RunnableRequest(BaseModel):
     runnableCode: str
 
 class RunnableResponse(BaseModel):
     runnableCode: str
-    status: Optional[str] = None
 
 class RunnablePromise(BaseModel):
     resolve: Dict[str, Dict] = {}

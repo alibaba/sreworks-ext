@@ -1,7 +1,9 @@
 
 from runnable import RunnableResponse
+from typing import Dict, List, Optional
 
 class ApiResponse(RunnableResponse):
     runnableCode: str = "API_WORKER"
-    data: object
-    
+    result: str
+    statusCode: int
+    outputs: Optional[Dict|List|str]

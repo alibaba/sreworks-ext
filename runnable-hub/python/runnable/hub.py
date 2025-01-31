@@ -5,7 +5,7 @@ import asyncio
 import uuid
 from abc import ABC, abstractmethod
 from .context import RunnableRequest, RunnableContext, RunnableStatus
-from .store import RunnableStore
+from .store import RunnableFileStore
 from typing import Dict
 import os
 import traceback
@@ -21,7 +21,7 @@ class RunnableWorker(ABC):
 
 class RunnableHub():
 
-    def __init__(self, store: RunnableStore):
+    def __init__(self, store: RunnableFileStore):
         self.workers = {}
         self.requests = {}
         self.responses = {}
@@ -43,7 +43,8 @@ class RunnableHub():
         self.responses[worker.runnableCode] = worker.Response
 
     def readExecuteContext(self, storePath:str, runnableCode: str) -> RunnableContext:
-        return RunnableContext[self.requests[runnableCode], self.responses[runnableCode]].model_validate_json(self.store.read(f"{storePath}/context.json"))
+        return RunnableContext[self.requests[runnableCode], self.responses[runnableCode]].model_validate_json(
+            self.store.readFile(f"{storePath}/context.json"))
 
     async def executeStart(self, request: RunnableRequest, parentContext: RunnableContext|None = None, name: str|None = None) -> RunnableContext:
         executeId=str(uuid.uuid4())
@@ -71,7 +72,7 @@ class RunnableHub():
             createTime=datetime.now(), 
             status=RunnableStatus.PENDING)
         
-        self.store.save(f"{newContext.storePath}/context.json", newContext.model_dump_json())
+        self.store.saveFile(f"{newContext.storePath}/context.json", newContext.model_dump_json())
         await self.workers[newContext.runnableCode].queue.put(f"{newContext.storePath}/context.json|")
         return newContext
     
@@ -81,17 +82,19 @@ class RunnableHub():
         parentStorePath = os.path.dirname(context.storePath)
         await self.workers[context.parentRunnableCode].queue.put(f"{parentStorePath}/context.json|{context.runnableCode}#{context.name}={self.shortExecuteId(context.executeId)}")
 
-    # def executeCheck(self, executeId: str) -> RunnableContext:
-    #     result = RunnableContext(request=None, response=None, executeId=executeId, runnableCode="test", startTime=datetime.now(), createTime=datetime.now(), status=RunnableStatus.PENDING)
-    #     return result
+    async def executeWait(self, context: RunnableContext) -> RunnableContext:
+        while context.status not in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
+            await asyncio.sleep(1)
+            context = self.readExecuteContext(context.storePath, context.runnableCode)
+        return context
 
 class RunnableWorkerDispatch():
     worker: RunnableWorker
     queue: asyncio.Queue
-    store: RunnableStore
+    store: RunnableFileStore
     hub: RunnableHub
 
-    def __init__(self, worker: RunnableWorker, queue: asyncio.Queue, store: RunnableStore, hub: RunnableHub):
+    def __init__(self, worker: RunnableWorker, queue: asyncio.Queue, store: RunnableFileStore, hub: RunnableHub):
         self.worker = worker
         self.queue = queue
         self.store = store
@@ -108,7 +111,8 @@ class RunnableWorkerDispatch():
             else:
                 print(f"RunnableWorkerDispatch {self.worker.runnableCode} get message {contextFile}")
 
-            context = RunnableContext[self.worker.Request, self.worker.Response].model_validate_json(self.store.read(contextFile))
+            context = RunnableContext[self.worker.Request, self.worker.Response].model_validate_json(
+                self.store.readFile(contextFile))
 
             if callbacks != "":
                 for callback in callbacks.split(","):
@@ -117,7 +121,7 @@ class RunnableWorkerDispatch():
                     callbackRunnableCode, name = runnableCodeAndName.split('#', 1)
                     callbackContext = self.hub.readExecuteContext(f"{context.storePath}/{executeShortId}", callbackRunnableCode)
                     if callbackContext.status == RunnableStatus.SUCCESS:
-                        context.promise.result[name] = callbackContext.response.model_dump() if callbackContext.response is not None else {"status": callbackContext.status.value}
+                        context.promise.result[name] = callbackContext.response.model_dump() if callbackContext.response is not None else {}
                     elif callbackContext.status == RunnableStatus.ERROR:
                         context.promise.reject[name] = callbackContext.errorMessage if callbackContext.errorMessage is not None else ""
                     else:
@@ -151,4 +155,4 @@ class RunnableWorkerDispatch():
                     await self.hub.executeStart(self.hub.requests[req['runnableCode']](**req), context, name)
 
             print(context)
-            self.store.save(contextFile, context.model_dump_json())
+            self.store.saveFile(contextFile, context.model_dump_json())
