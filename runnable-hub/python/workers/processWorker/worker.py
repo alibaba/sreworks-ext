@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Any, List
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from .request.processRequest import ProcessRequest
 from .request.processStep import ProcessStep
@@ -34,7 +34,7 @@ class Worker(RunnableWorker):
         self.jinjaNewEnv.filters["save"] = save_filter
 
 
-    def complexRender(self, data: Dict, target: Dict):
+    def complexRender(self, data: Dict, target):
         if isinstance(target, dict):
             return {self.complexRender(data, key): self.complexRender(data, value) for key, value in target.items()}
         elif isinstance(target, list):
@@ -53,23 +53,22 @@ class Worker(RunnableWorker):
 
     def make_worker_request(self, step, stepOutputs) -> Dict:
         outputs = OutputRender()
-        step = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
-        if step.get("shell") is not None:
-            step["request"] = {
+        stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
+        if stepRender.get("shell") is not None:
+            stepRender["request"] = {
                 "runnableCode": "SHELL_WORKER",
-                "run": step["shell"],
+                "run": stepRender["shell"],
                 "outputs": outputs.outputValueMap,
             }
-        elif step.get("api") is not None:
-            step["request"] = step["api"]
-            step["request"]["runnableCode"] = "API_WORKER"
-        elif step.get("jinja") is not None:
-            step["request"] = step["jinja"]
-            step["request"]["runnableCode"] = "JINJA_WORKER"
+        elif stepRender.get("api") is not None:
+            stepRender["request"] = stepRender["api"]
+            stepRender["request"]["runnableCode"] = "API_WORKER"
+        elif stepRender.get("jinja") is not None:
+            stepRender["request"] = stepRender["jinja"]
+            stepRender["request"]["runnableCode"] = "JINJA_WORKER"
         else:
-            step["request"]["runnableCode"] = step["runnableCode"]
-        
-        return step
+            stepRender["request"]["runnableCode"] = stepRender["runnableCode"]
+        return stepRender
 
 
     async def onNext(self, context: RunnableContext[ProcessRequest, ProcessResponse]) -> RunnableContext:
@@ -82,10 +81,11 @@ class Worker(RunnableWorker):
                 context.data["runtime"][jobId] = {
                     "needs": job.needs[:],
                     "steps": [step.model_dump() for step in job.steps],
-                    "outputs": {},
+                    "stepOutputs": {},
                     "errors": {},
                     "currentStepId": None,
                     "startTime": datetime.now(),
+                    "outputs": job.outputs,
                 }
                 if len(job.needs) == 0:
                     context.data["runtime"][jobId]["jobStatus"] = "RUNNING"
@@ -99,7 +99,7 @@ class Worker(RunnableWorker):
                 continue
 
             if context.promise.result.get(jobId) is not None:
-                job["outputs"][job["currentStepId"]] = context.promise.result[jobId]
+                job["stepOutputs"][job["currentStepId"]] = context.promise.result[jobId]
                 job["currentStepId"] = None
                 job["stepStatus"] = "SUCESS"
             
@@ -118,12 +118,14 @@ class Worker(RunnableWorker):
                     checkJob["jobStatus"] = "ERROR"
                     checkJob["endTime"] = datetime.now()
             elif len(job["steps"]) > 0:
-                step = self.make_worker_request(job["steps"].pop(0), job["outputs"])
+                step = self.make_worker_request(job["steps"].pop(0), job["stepOutputs"])
                 job["currentStepId"] = step["id"]
                 context.promise.resolve[jobId] = step["request"]
             else:
                 job["jobStatus"] = "SUCCESS"
                 job["endTime"] = datetime.now()
+                if job["outputs"] is not None:
+                    job["outputs"] = self.complexRender({"steps": job["stepOutputs"]}, job["outputs"])
                 for checkJob in context.data["runtime"].values():
                     if jobId in checkJob["needs"]:
                         checkJob["needs"].remove(jobId)
@@ -134,6 +136,11 @@ class Worker(RunnableWorker):
         allStatus = set([r["jobStatus"] for r in context.data["runtime"].values()])
         if allStatus == set(["SUCCESS"]):
             context.status = RunnableStatus.SUCCESS
+            if context.request.outputs is not None:
+                jobOutputs = {jobId: {"outputs":job["outputs"]} for jobId, job in context.data["runtime"].items()}
+                processOutputs = self.complexRender({"jobs": jobOutputs}, context.request.outputs)
+                context.response = ProcessResponse(outputs=processOutputs) # type: ignore
+
         elif allStatus == set(["ERROR"]) or allStatus == set(["ERROR","SUCCESS"]):
             context.status = RunnableStatus.ERROR
 

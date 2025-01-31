@@ -9,4 +9,4 @@ class ToolParamSpec(BaseModel):
     name: str
     type: ToolParamSpecType
     required: Optional[bool] = False
-    defaultValue: Optional[Dict|List|str|bool|float]
+    defaultValue: Optional[Dict|List|str|bool|float] = None

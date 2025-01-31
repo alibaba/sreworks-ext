@@ -1,8 +1,8 @@
 
 from runnable import RunnableResponse
-from typing import Dict
+from typing import Dict, Optional, Any
 
 class ProcessResponse(RunnableResponse):
     runnableCode: str = "PROCESS_WORKER"
-    outputs: Dict
+    outputs: Optional[Dict|str] = None
     

@@ -1,9 +1,9 @@
 
-from typing import Dict
+from typing import Dict, Optional
 from runnable import RunnableResponse
 
 class ToolResponse(RunnableResponse):
     runnableCode: str = "TOOL_WORKER"
     outputs: Dict
-    errorMessage: str
+    errorMessage: Optional[str] = None
     success: bool
