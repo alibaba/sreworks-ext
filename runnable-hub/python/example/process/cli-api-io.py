@@ -28,10 +28,6 @@ requestYaml = """
             template: |
               {
                 "url": "{{ url }}",
-                "outputLoads": "JSON",
-                "headers":{
-                    "Accept": "application/dns-json"
-                },
                 "params":{
                     "name": "baidu.com",
                     "type": "A"
@@ -42,7 +38,7 @@ requestYaml = """
             url: ${{ steps.params.outputs.url }}
             outputLoads: JSON
             headers:
-                Accept: application/dns-json
+              Accept: application/dns-json
             params: ${{ steps.params.outputs.params }} 
     
 """
