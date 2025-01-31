@@ -17,7 +17,6 @@ from runnable.store import RunnableLocalFileStore
 requestYaml = """
     url: http://ifconfig.me
     method: GET
-    resultFormat: TEXT
     headers:
         User-Agent: curl/7.68.0
 """

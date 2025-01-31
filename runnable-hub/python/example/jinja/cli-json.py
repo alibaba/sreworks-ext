@@ -19,7 +19,7 @@ requestYaml = """
       {"a": "{{ data.name }}"}
     data: 
       name: test
-    resultFormat: JSON
+    outputLoads: JSON
 """
 
 async def main():

@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 from workers.processWorker.worker import Worker as ProcessWorker
 from workers.processWorker.request.processRequest import ProcessRequest
 from workers.apiWorker.worker import Worker as ApiWorker
+from workers.jinjaWorker.worker import Worker as JinjaWorker
 from runnable import RunnableHub
 from runnable.store import RunnableLocalFileStore
 
@@ -19,15 +20,30 @@ requestYaml = """
     jobs:
       api:
         steps:
+        - id: params
+          jinja:
+            data: 
+              url: https://cloudflare-dns.com/dns-query
+            outputLoads: JSON
+            template: |
+              {
+                "url": "{{ data.url }}",
+                "outputLoads": "JSON",
+                "headers":{
+                    "Accept": "application/dns-json"
+                },
+                "params":{
+                    "name": "baidu.com",
+                    "type": "A"
+                }
+              }
         - id: api
           api: 
-            url: https://cloudflare-dns.com/dns-query
+            url: ${{ steps.params.outputs.url }}
             outputLoads: JSON
             headers:
                 Accept: application/dns-json
-            params:
-                name: baidu.com
-                type: A
+            params: ${{ steps.params.outputs.params }} 
     
 """
 
@@ -36,6 +52,7 @@ async def main():
     runnableHub = RunnableHub(store=RunnableLocalFileStore("/tmp/"))
     runnableHub.registerWorker(ProcessWorker())
     runnableHub.registerWorker(ApiWorker())
+    runnableHub.registerWorker(JinjaWorker())
     print(runnableHub.workers)
 
     runnableContext = await runnableHub.executeStart(

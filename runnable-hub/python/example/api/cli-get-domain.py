@@ -16,7 +16,7 @@ from runnable.store import RunnableLocalFileStore
 
 requestYaml = """
     url: https://cloudflare-dns.com/dns-query
-    resultFormat: JSON
+    outputLoads: JSON
     headers:
         Accept: application/dns-json
     params:

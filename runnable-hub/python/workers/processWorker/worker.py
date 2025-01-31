@@ -16,6 +16,10 @@ class OutputRender:
         self.outputValueMap[name] = str(uuid4())[:8]+".txt"
         return {"path":"$SHELL_RUN_PATH/" + self.outputValueMap[name]}
 
+def save_filter(value, target_dict):
+    target_dict["save"] = value
+    return value
+
 class Worker(RunnableWorker):
 
     runnableCode = "PROCESS_WORKER"
@@ -27,21 +31,41 @@ class Worker(RunnableWorker):
             variable_start_string="${{",  # 使用 ${{ 作为变量开始标记
             variable_end_string="}}",     # 使用 }} 作为变量结束标记
         )
+        self.jinjaNewEnv.filters["save"] = save_filter
+
+
+    def complexRender(self, data: Dict, target: Dict):
+        if isinstance(target, dict):
+            return {self.complexRender(data, key): self.complexRender(data, value) for key, value in target.items()}
+        elif isinstance(target, list):
+            return [self.complexRender(data, value) for value in target]
+        elif isinstance(target, str):
+            target = target.strip()
+            # 如果整个字符串只有 ${{ ... }} 则直接取里面的内容，保留变量类型
+            if target.startswith("${{") and target.endswith("}}"):
+                fetchValue = {}
+                self.jinjaNewEnv.from_string(target[:-2] + "|save(fetchValue)}}").render(fetchValue=fetchValue, **data)
+                return fetchValue["save"]
+            else:
+                return self.jinjaNewEnv.from_string(target).render(**data)
+        else:
+            return target
 
     def make_worker_request(self, step, stepOutputs) -> Dict:
         outputs = OutputRender()
+        step = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
         if step.get("shell") is not None:
             step["request"] = {
                 "runnableCode": "SHELL_WORKER",
-                "run": self.jinjaNewEnv.from_string(step["shell"]).render(outputs=outputs, steps=stepOutputs),
+                "run": step["shell"],
                 "outputs": outputs.outputValueMap,
             }
         elif step.get("api") is not None:
-            if isinstance(step["api"], dict):
-                step["request"] = step["api"]
-            else:
-                step["request"] = json.loads(self.jinjaNewEnv.from_string(step["api"]).render(outputs=outputs, steps=stepOutputs))
+            step["request"] = step["api"]
             step["request"]["runnableCode"] = "API_WORKER"
+        elif step.get("jinja") is not None:
+            step["request"] = step["jinja"]
+            step["request"]["runnableCode"] = "JINJA_WORKER"
         else:
             step["request"]["runnableCode"] = step["runnableCode"]
         

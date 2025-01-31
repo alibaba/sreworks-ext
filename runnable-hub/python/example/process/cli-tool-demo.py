@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 from workers.processWorker.worker import Worker as ProcessWorker
 from workers.processWorker.request.processRequest import ProcessRequest
-from workers.shellWorker.worker import Worker as ShellWorker
+from workers.jinjaWorker.worker import Worker as JinjaWorker
+from workers.apiWorker.worker import Worker as ApiWorker
 from runnable import RunnableHub
 from runnable.store import RunnableLocalFileStore
 
@@ -23,27 +24,33 @@ requestYaml = """
           jinja:
             data: 
               domain: baidu.com
-            resultFormat: TEXT
+            outputLoads: JSON
             template: |
               {
                 "url": "https://cloudflare-dns.com/dns-query",
                 "method": "GET",
-                "resultFormat": JSON,
+                "headers":{
+                  "Accept": "application/dns-json"
+                },
                 "params":{
-                  "name": "{{ domain }}",
+                  "name": "{{ data.domain }}",
                   "type": "A"
                 }
               }
         - id: call
-          api: ${{ steps.setting.outputs }}
+          api: 
+            url: ${{ steps.setting.outputs.url }}
+            method: ${{ steps.setting.outputs.method }}
+            headers: ${{ steps.setting.outputs.headers }}
+            params: ${{ steps.setting.outputs.params }}
+            outputLoads: JSON
         - id: result
           jinja:
-            resultFormat: JSON
-            dataJson: ${{ steps.call.outputs.result }}
+            data: ${{ steps.call.outputs }}
+            outputLoads: TEXT
             template: |
-              {
-                "test": "{{ result }}"
-              }
+              {{data.Answer[0].data}}
+              
 
 
     
@@ -53,7 +60,8 @@ async def main():
 
     runnableHub = RunnableHub(store=RunnableLocalFileStore("/tmp/"))
     runnableHub.registerWorker(ProcessWorker())
-    runnableHub.registerWorker(ShellWorker())
+    runnableHub.registerWorker(ApiWorker())
+    runnableHub.registerWorker(JinjaWorker())
     print(runnableHub.workers)
 
     runnableContext = await runnableHub.executeStart(
