@@ -8,6 +8,6 @@ from .toolParamSpecType import ToolParamSpecType
 class ToolApiSetting(BaseModel):
     payload: Optional[Dict] = None
     headers: Optional[Dict] = None
-    query: Optional[Dict] = None
+    params: Optional[Dict] = None
     url: str
     method: str

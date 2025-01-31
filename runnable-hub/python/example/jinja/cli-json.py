@@ -16,7 +16,7 @@ from runnable.store import RunnableLocalFileStore
 
 requestYaml = """
     template: |
-      {"a": "{{ data.name }}"}
+      {"a": "{{ name }}"}
     data: 
       name: test
     outputLoads: JSON

@@ -19,7 +19,7 @@ class Worker(RunnableWorker):
         
         renderData = context.request.data
 
-        rawResult = self.jinjaEnv.from_string(context.request.template).render(data=renderData)
+        rawResult = self.jinjaEnv.from_string(context.request.template).render(**renderData)
         if context.request.outputLoads == RunnableOutputLoads.TEXT:
             context.response = JinjaResponse(result=rawResult, outputs=rawResult)
             context.status = RunnableStatus.SUCCESS

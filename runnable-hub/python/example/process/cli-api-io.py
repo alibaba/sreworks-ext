@@ -27,7 +27,7 @@ requestYaml = """
             outputLoads: JSON
             template: |
               {
-                "url": "{{ data.url }}",
+                "url": "{{ url }}",
                 "outputLoads": "JSON",
                 "headers":{
                     "Accept": "application/dns-json"

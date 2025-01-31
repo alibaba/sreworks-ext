@@ -23,7 +23,8 @@ requestYaml = """
         - id: setting
           jinja:
             data: 
-              domain: baidu.com
+              input:
+                domain: baidu.com
             outputLoads: JSON
             template: |
               {
@@ -32,24 +33,21 @@ requestYaml = """
                 "headers":{
                   "Accept": "application/dns-json"
                 },
+                "outputLoads": "JSON",
                 "params":{
-                  "name": "{{ data.domain }}",
+                  "name": "{{ input.domain }}",
                   "type": "A"
                 }
               }
         - id: call
-          api: 
-            url: ${{ steps.setting.outputs.url }}
-            method: ${{ steps.setting.outputs.method }}
-            headers: ${{ steps.setting.outputs.headers }}
-            params: ${{ steps.setting.outputs.params }}
-            outputLoads: JSON
+          api: ${{ steps.setting.outputs }}
         - id: result
           jinja:
-            data: ${{ steps.call.outputs }}
+            data: 
+              result: ${{ steps.call.outputs }}
             outputLoads: TEXT
             template: |
-              {{data.Answer[0].data}}
+              {{result.Answer[0].data}}
               
 
 
