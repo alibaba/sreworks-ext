@@ -4,8 +4,6 @@ from typing import List, Dict, Optional, Generic, TypeVar
 from datetime import datetime
 from enum import Enum
 
-from pyparsing import ParseSyntaxException
-
 T = TypeVar('T')
 R = TypeVar("R")
 
@@ -14,11 +12,6 @@ class RunnableStatus(Enum):
     RUNNING = "RUNNING"
     SUCCESS = "SUCCESS"
     ERROR = "ERROR"
-
-class RunnableOutputLoads(Enum):
-    JSON = "JSON"
-    TEXT = "TEXT"
-    YAML = "YAML"
 
 class RunnableRequest(BaseModel):
     runnableCode: str

@@ -2,7 +2,6 @@
 from pydantic import BaseModel
 from typing import Optional, Dict, List
 
-from traitlets import default
 from .toolParamSpecType import ToolParamSpecType
 
 class ToolParamSpec(BaseModel):
