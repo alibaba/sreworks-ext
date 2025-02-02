@@ -10,3 +10,4 @@ class ApiRequest(RunnableRequest):
     outputLoads: RunnableOutputLoads = RunnableOutputLoads.TEXT
     headers: Dict = {}
     params: Dict = {}
+    payloads: Dict = {}

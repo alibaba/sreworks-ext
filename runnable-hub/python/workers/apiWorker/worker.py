@@ -32,6 +32,16 @@ class Worker(RunnableWorker):
                         statusCode=response.status)
                     context.status = RunnableStatus.SUCCESS
                     return context
+        elif context.request.method == ApiHttpMethod.POST:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(context.request.url, 
+                                        headers=context.request.headers, params=context.request.params, json=context.request.payloads) as response:
+                    result = await response.text()
+                    context.response = ApiResponse(
+                        result=result, outputs=self.outputs(result, context.request.outputLoads),
+                        statusCode=response.status)
+                    context.status = RunnableStatus.SUCCESS
+                    return context
         else:
             context.status = RunnableStatus.ERROR
             context.errorMessage = "method not support"
