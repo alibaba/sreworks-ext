@@ -17,8 +17,10 @@ from runnable import RunnableHub
 from runnable.store import RunnableLocalFileStore
 
 requestYaml = """
+    outputs: ${{ jobs.call.outputs }}
     jobs:
       call:
+        outputs: ${{ steps.result.outputs }}
         steps:
         - id: setting
           jinja:

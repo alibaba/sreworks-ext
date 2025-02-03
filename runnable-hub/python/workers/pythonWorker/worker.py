@@ -1,28 +1,28 @@
 
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
-from .request.shellRequest import ShellRequest
-from .response import ShellResponse
+from .request import PythonRequest
+from .response import PythonResponse
+import sys
 
 import asyncio
-import tempfile
 import shutil
 import os
 
 class Worker(RunnableWorker):
 
-    runnableCode = "SHELL_WORKER"
-    Request = ShellRequest
-    Response = ShellResponse
+    runnableCode = "PYTHON_WORKER"
+    Request = PythonRequest
+    Response = PythonResponse
 
-    shellBin = "/bin/bash"
+    pythonBin = sys.executable
 
-    def __init__(self, storePath = "/tmp/shell"):
+    def __init__(self, storePath = "/tmp/python"):
         self.storePath = storePath
         if not os.path.exists(self.storePath):
             os.makedirs(self.storePath)
 
     @staticmethod
-    async def run_command(command, cwd=None, env=None):
+    async def run_python(command, cwd=None, env=None):
         process = await asyncio.create_subprocess_exec(
             *command,
             stdout=asyncio.subprocess.PIPE,
@@ -33,27 +33,27 @@ class Worker(RunnableWorker):
         stdout, stderr = await process.communicate()
         return process.returncode, stdout.decode(), stderr.decode()
 
-    async def onNext(self, context: RunnableContext[ShellRequest, ShellResponse]) -> RunnableContext:
+    async def onNext(self, context: RunnableContext[PythonRequest, PythonResponse]) -> RunnableContext:
         
         # create a temporary path to store script
         temporary_path = os.path.join(self.storePath, context.executeId)
         if not os.path.exists(temporary_path):
             os.makedirs(temporary_path)
 
-        temp_file = f"{temporary_path}/run.sh"
+        temp_file = f"{temporary_path}/run.py"
         with open(temp_file, "w") as h:
             h.write(context.request.run)
         
         try:
-            returncode, stdout, stderr = await self.run_command(
-                [self.shellBin, temp_file], cwd=temporary_path, env={"SHELL_RUN_PATH": temporary_path})
+            returncode, stdout, stderr = await self.run_python(
+                [self.pythonBin, temp_file], cwd=temporary_path, env={"PYTHON_RUN_PATH": temporary_path})
             outputs = {}
             if context.request.outputs is not None:
                 for key, fileName in context.request.outputs.items():
                     with open(f"{temporary_path}/{fileName}", "r") as h:
                         outputs[key] = h.read().strip()
 
-            context.response = ShellResponse(returncode=returncode, stdout=stdout, stderr=stderr, outputs=outputs)
+            context.response = PythonResponse(returncode=returncode, stdout=stdout, stderr=stderr, outputs=outputs)
             context.status = RunnableStatus.SUCCESS
                 
         finally:

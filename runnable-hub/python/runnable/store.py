@@ -27,7 +27,6 @@ class RunnableLocalFileStore(RunnableFileStore):
 
     def saveFile(self, filePath, content):
         fullPath = os.path.join(self.path, filePath)
-        print(fullPath)
         directory = os.path.dirname(fullPath)
         
         # 检查目录是否存在，如果不存在则创建

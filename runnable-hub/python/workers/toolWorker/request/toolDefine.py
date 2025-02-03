@@ -3,15 +3,14 @@ from pydantic import BaseModel
 from runnable import RunnableOutputLoads
 from .toolType import ToolType
 from .toolParamSpec import ToolParamSpec
-from typing import Dict, List, Generic, TypeVar, Optional
+from typing import Dict, List, Optional
 
-T = TypeVar('T')
 
-class ToolDefine(BaseModel, Generic[T]):
+class ToolDefine(BaseModel):
     toolCode: str
     toolVersion: str
     toolType: ToolType
-    setting: T                               # 工具配置
+    setting: Dict                            # 工具配置
     inputSpec: List[ToolParamSpec] = []      # 输入变量结构
     outputSpec: List[ToolParamSpec] = []     # 输出变量结构
     outputsLoads: RunnableOutputLoads = RunnableOutputLoads.TEXT
