@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 from runnable import RunnableOutputLoads, RunnableValueDefine
 from typing import Dict, List, Optional
-from .agentPromptTemplate import AgentPromptTemplate
+from .agentPromptChainTemplate import AgentPromptChainTemplate
 
 
 class AgentDefine(BaseModel):
@@ -10,6 +10,7 @@ class AgentDefine(BaseModel):
     agentVersion: str
     prerun: Optional[Dict] = None
     postrun: Optional[Dict] = None
-    promptTemplate: AgentPromptTemplate
     inputDefine: List[RunnableValueDefine] = []
     outputDefine: List[RunnableValueDefine] = []
+    reasoningRunnables: List[str] = []
+    reasoningPromptTemplate: AgentPromptChainTemplate
