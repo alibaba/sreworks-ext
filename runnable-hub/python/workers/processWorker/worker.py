@@ -10,11 +10,12 @@ from uuid import uuid4
 import json
 
 class OutputRender:
-    def __init__(self):
+    def __init__(self, pathValueTemplate):
         self.outputValueMap = {}
+        self.pathValueTemplate = pathValueTemplate
     def __getattr__(self, name):
         self.outputValueMap[name] = str(uuid4())[:8]+".txt"
-        return {"path":"$SHELL_RUN_PATH/" + self.outputValueMap[name]}
+        return {"path": self.pathValueTemplate.format(outputFileName=self.outputValueMap[name])}
 
 def save_filter(value, target_dict):
     target_dict["save"] = value
@@ -32,7 +33,6 @@ class Worker(RunnableWorker):
             variable_end_string="}}",     # 使用 }} 作为变量结束标记
         )
         self.jinjaNewEnv.filters["save"] = save_filter
-
 
     def complexRender(self, data: Dict, target):
         if isinstance(target, dict):
@@ -52,21 +52,35 @@ class Worker(RunnableWorker):
             return target
 
     def make_worker_request(self, step, stepOutputs) -> Dict:
-        outputs = OutputRender()
-        stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
-        if stepRender.get("shell") is not None:
+
+        # stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
+        if step.get("shell") is not None:
+            outputs = OutputRender('$SHELL_RUN_PATH/{outputFileName}')
+            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
             stepRender["request"] = {
                 "runnableCode": "SHELL_WORKER",
                 "run": stepRender["shell"],
                 "outputs": outputs.outputValueMap,
             }
-        elif stepRender.get("api") is not None:
+        elif step.get("api") is not None:
+            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"] = stepRender["api"]
             stepRender["request"]["runnableCode"] = "API_WORKER"
-        elif stepRender.get("jinja") is not None:
+        elif step.get("jinja") is not None:
+            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"] = stepRender["jinja"]
             stepRender["request"]["runnableCode"] = "JINJA_WORKER"
+        elif step.get("python") is not None:
+            outputs = OutputRender("os.environ.get('PYTHON_RUN_PATH')+'/{outputFileName}'")
+            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
+            stepRender["request"] = {
+                "runnableCode": "PYTHON_WORKER",
+                "run": stepRender["python"],
+                "outputs": outputs.outputValueMap,
+            }
+            stepRender["request"]["runnableCode"] = "PYTHON_WORKER"
         else:
+            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"]["runnableCode"] = stepRender["runnableCode"]
         return stepRender
 
