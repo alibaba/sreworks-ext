@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Dict, Optional
 
-class ChainThoughtRunnable(BaseModel):
+class ChainRunnable(BaseModel):
     runnableCode: str
     request: Dict
