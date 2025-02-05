@@ -1,7 +1,7 @@
 
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
-from .request.chainThoughtRequest import ChainThoughtRequest
-from .response import ChainThoughtResponse
+from .request.chainRequest import ChainRequest
+from .response import ChainResponse
 import sys
 
 import asyncio
@@ -10,9 +10,9 @@ import os
 
 class Worker(RunnableWorker):
 
-    runnableCode = "CHAIN_THOUGHT_WORKER"
-    Request = ChainThoughtRequest
-    Response = ChainThoughtResponse
+    runnableCode = "CHAIN_WORKER"
+    Request = ChainRequest
+    Response = ChainResponse
 
     pythonBin = sys.executable
 
@@ -33,7 +33,7 @@ class Worker(RunnableWorker):
         stdout, stderr = await process.communicate()
         return process.returncode, stdout.decode(), stderr.decode()
 
-    async def onNext(self, context: RunnableContext[ChainThoughtRequest, ChainThoughtResponse]) -> RunnableContext:
+    async def onNext(self, context: RunnableContext[ChainRequest, ChainResponse]) -> RunnableContext:
         
         # create a temporary path to store script
         temporary_path = os.path.join(self.storePath, context.executeId)
