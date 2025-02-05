@@ -7,5 +7,5 @@ from ..request.llmMessage import LlmMessage
 class LlmResponse(RunnableResponse):
     runnableCode: str = "LLM_WORKER"
     usage: LlmUsage
-    message: LlmMessage
-    sendMessage: LlmMessage
+    content: str
+    messages: List[LlmMessage]

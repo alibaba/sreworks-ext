@@ -40,23 +40,22 @@ class Worker(RunnableWorker):
             async with session.post(context.request.endpoint, 
                                     headers=headers, json=payload) as response:
                 result = await response.json()
-                message = LlmMessage(
-                    role=result["choices"][0]["message"]["role"],
-                    content=result["choices"][0]["message"]["content"]
-                )
-                sendMessage = LlmMessage(
+                messages = [LlmMessage(
                     role="user",
                     content=context.request.userPrompt,
-                )
+                ),LlmMessage(
+                    role=result["choices"][0]["message"]["role"],
+                    content=result["choices"][0]["message"]["content"]
+                )]
                 usage = LlmUsage(
                     promptTokens=result["usage"]["prompt_tokens"],
                     completionTokens=result["usage"]["completion_tokens"],
                     totalTokens=result["usage"]["total_tokens"]
                 )
                 context.response = LlmResponse(
-                    message=message,
+                    messages=messages,
                     usage=usage,
-                    sendMessage=sendMessage,
+                    content=result["choices"][0]["message"]["content"],
                 )
                 context.status = RunnableStatus.SUCCESS
                 return context
