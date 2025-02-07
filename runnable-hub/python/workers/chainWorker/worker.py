@@ -3,6 +3,7 @@ from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from .request.chainRequest import ChainRequest
 from .response import ChainResponse
 import sys
+from jinja2 import Environment
 
 import asyncio
 import shutil
@@ -17,9 +18,7 @@ class Worker(RunnableWorker):
     pythonBin = sys.executable
 
     def __init__(self, storePath = "/tmp/python"):
-        self.storePath = storePath
-        if not os.path.exists(self.storePath):
-            os.makedirs(self.storePath)
+        self.jinjaEnv = Environment()
 
     @staticmethod
     async def run_python(command, cwd=None, env=None):
@@ -34,30 +33,41 @@ class Worker(RunnableWorker):
         return process.returncode, stdout.decode(), stderr.decode()
 
     async def onNext(self, context: RunnableContext[ChainRequest, ChainResponse]) -> RunnableContext:
-        
-        # create a temporary path to store script
-        temporary_path = os.path.join(self.storePath, context.executeId)
-        if not os.path.exists(temporary_path):
-            os.makedirs(temporary_path)
 
-        temp_file = f"{temporary_path}/run.py"
-        with open(temp_file, "w") as h:
-            h.write(context.request.run)
-        
-        try:
-            returncode, stdout, stderr = await self.run_python(
-                [self.pythonBin, temp_file], cwd=temporary_path, env={"PYTHON_RUN_PATH": temporary_path})
-            outputs = {}
-            if context.request.outputs is not None:
-                for key, fileName in context.request.outputs.items():
-                    with open(f"{temporary_path}/{fileName}", "r") as h:
-                        outputs[key] = h.read().strip()
+        if context.data.get("runtime") is None:
+            # todo merge function call defines
+            renderData = context.request.data
 
-            context.response = PythonResponse(returncode=returncode, stdout=stdout, stderr=stderr, outputs=outputs)
-            context.status = RunnableStatus.SUCCESS
-                
-        finally:
-            shutil.rmtree(temporary_path)
+            systemPrompt = self.jinjaEnv.from_string(context.request.systemPrompt).render(**renderData)
+            userPrompt = self.jinjaEnv.from_string(context.request.userPrompt).render(**renderData)
+
+            context.promise.resolve["llm"] = {
+                "runnableCode": "LLM_WORKER",
+                "endpoint": context.request.llmEndpoint,
+                "model": context.request.llmModel,
+                "secretKey": context.request.llmSecretKey,
+                "systemPrompt": systemPrompt,
+                "userPrompt": userPrompt,
+            }
+
+            context.data["runtime"] = {
+                "history": [],
+                "systemPrompt": systemPrompt,
+                "nextStep": "interpreter",
+                "nextInput": None,
+            }
+        
+        if context.data["runtime"]["currentStep"] == "interpreter":
+            if context.promise.result["llm"] is None:
+                raise ValueError("LLM response is missing")
+            context.promise.resolve["interpreter"] = {
+                "runnableCode": "PYTHON_WORKER",
+                "data": {
+                    "completion": context.promise.result["llm"]["content"],
+                },
+                "run": context.request.chainInterpreter,
+            }            
+
 
         return context
 
