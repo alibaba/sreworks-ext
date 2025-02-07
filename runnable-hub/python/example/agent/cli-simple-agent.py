@@ -34,8 +34,7 @@ defineYaml = """
       systemPrompt: ...
       userPrompt: ...
       completionPattern: "Action:{:s}{:action_input}"
-      completionParserScript: |
-
+      completionParserScript: |      
         @with_pattern(r"\{.*?(?=\n\w+:|\Z)")
         def action_input(text: str) -> dict:
             action = json.loads(text)

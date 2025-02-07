@@ -39,12 +39,18 @@ class Worker(RunnableWorker):
         temporary_path = os.path.join(self.storePath, context.executeId)
         if not os.path.exists(temporary_path):
             os.makedirs(temporary_path)
-
-        temp_file = f"{temporary_path}/run.py"
-        with open(temp_file, "w") as h:
-            h.write(context.request.run)
         
         try:
+            temp_file = f"{temporary_path}/run.py"
+            with open(temp_file, "w") as h:
+                h.write(context.request.run)
+
+            for fileName, fileContent in context.request.data.items():
+                if context.request.outputs is not None and fileName in context.request.outputs:
+                    raise Exception(f"Data file name '{fileName}' cannot be the same as output file name")
+                with open(f"{temporary_path}/{fileName}", "w") as h:
+                    h.write(fileContent)
+
             returncode, stdout, stderr = await self.run_python(
                 [self.pythonBin, temp_file], cwd=temporary_path, env={"PYTHON_RUN_PATH": temporary_path})
             outputs = {}
