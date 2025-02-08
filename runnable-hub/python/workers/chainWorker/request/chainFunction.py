@@ -10,7 +10,8 @@ class ChainFunctionType(str, Enum):
 
 class ChainFunction(BaseModel):
     type: ChainFunctionType
-    name: Optional[str]
+    name: str
+    version: str
     inputDefine: List[RunnableValueDefine] = []
     outputDefine: List[RunnableValueDefine] = []
     presetInputs: Dict
