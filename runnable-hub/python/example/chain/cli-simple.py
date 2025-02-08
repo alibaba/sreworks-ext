@@ -29,27 +29,25 @@ requestYaml += """
     onNext: |
       from pydantic import BaseModel
       from typing import Optional, Dict
-      from enum import Enum
-      
-      class Stage(Enum):
-        AFTER_PROMPT = "after_prompt"
-
-      
+   
       class FunctionCall(BaseModel):
         name: str
-        inputs: Dict
+        input: Dict
       
+      class ChainDo(BaseModel):
+        message: Optional[str]                    # Message to be replied
+        function: Optional[FunctionCall]          # Function call to be executed
+        finalAnswer: Optional[str]                # Final answer to be returned
+        overwriteMessage: Optional[str]           # Message to be overwritten
+
       class ChainContext(BaseModel):
         message: str
-        callResult: Optional[str]
-        messageReply: Optional[str]               # Message to be replied
-        functionCall: Optional[FunctionCall]      # Function call to be executed
-        finalAnswer: Optional[str]                # Final answer to be returned
-        messageOverwrite: Optional[str]           # Message to be overwritten
+        function: Optional[str]
+        do: ChainDo = ChainDo()
 
       def onNext(context: ChainContext):
       
-        if context.callResult is None:
+        if context.function is None:
           pattern = re.compile(r'Action:\s*```\n?(.*?)```', re.DOTALL | re.IGNORECASE)
           match = pattern.search(context.message)
           if match:
@@ -57,17 +55,17 @@ requestYaml += """
             try:
                 action_data = json.loads(json_str)
                 if action_data.get("action") == "Final answer":
-                  context.finalAnswer = action_data["action_input"]
+                  context.do.finalAnswer = action_data["action_input"]
                 elif action_data.get("action_input") is not None:
-                  context.functionCall = FunctionCall(
+                  context.do.function = FunctionCall(
                     name=action_data["action"], 
-                    inputs=action_data["action_input"])
+                    input=action_data["action_input"])
             except json.JSONDecodeError:
               raise Exception("json parse fail, content:\n", json_str)
           else:
             raise Exception("No action found")
         else:
-          context.messageReply = "Observation: " + context.callResult
+          context.do.message = "Observation: " + context.function
 
         return context
       
@@ -79,14 +77,14 @@ requestYaml += """
       
       try:
         context = onNext(ChainContext(message=completion))
-        if context.messageOverwrite is not None:
-          print("<messageOverwrite>" + context.messageOverwrite + "</messageOverwrite>")
-        if context.messageReply is not None:
-          print("<messageReply>" + context.messageReply + "</messageReply>")
-        elif context.functionCall is not None:
-          print("<functionCall>" + json.dumps(context.functionCall.dict()) + "</functionCall>")
-        elif context.finalAnswer is not None:
-          print("<finalAnswer>" + context.finalAnswer + "</finalAnswer>")
+        if context.do.messageOverwrite is not None:
+          print("<overwriteMessage>" + context.do.overwriteMessage + "</overwriteMessage>")
+        if context.do.message is not None:
+          print("<message>" + context.message + "</message>")
+        elif context.do.function is not None:
+          print("<function>" + json.dumps(context.do.function.dict()) + "</function>")
+        elif context.do.finalAnswer is not None:
+          print("<finalAnswer>" + context.do.finalAnswer + "</finalAnswer>")
       except Exception as e:
         print("<error>"+str(e)+"</error>")
       
