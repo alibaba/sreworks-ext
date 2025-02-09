@@ -17,11 +17,12 @@ from runnable.store import RunnableLocalFileStore
 QWEN_SK = os.getenv("QWEN_SK")
 
 requestYaml = f"""
-    secretKey: {QWEN_SK}
+    setting:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
 """
 requestYaml += """
-    endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    model: qwen-plus
     systemPrompt: You are a helpful assistant.
     userPrompt: 能否再精简一些?
     history:

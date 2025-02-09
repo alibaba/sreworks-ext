@@ -51,9 +51,10 @@ toolDefineYaml = """
 
 
 requestYaml = f"""
-    llmEndpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    llmModel: qwen-plus
-    llmSecretKey: {QWEN_SK}
+    llm:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
 """
 
 requestYaml += """

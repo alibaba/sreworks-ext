@@ -17,9 +17,10 @@ from runnable.store import RunnableLocalFileStore
 QWEN_SK = os.getenv("QWEN_SK")
 
 requestYaml = f"""
-    endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    model: qwen-plus
-    secretKey: {QWEN_SK}
+    setting:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
     systemPrompt: You are a helpful assistant.
     userPrompt: 请帮我使用python的正则匹配json
 """

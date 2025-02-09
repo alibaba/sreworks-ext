@@ -16,11 +16,11 @@ class Worker(RunnableWorker):
 
     async def onNext(self, context: RunnableContext[LlmRequest, LlmResponse]) -> RunnableContext:
         headers = {
-            "Authorization": f"Bearer {context.request.secretKey}",
+            "Authorization": f"Bearer {context.request.setting.secretKey}",
             "Content-Type": "application/json"
         }
         payload = {
-            "model": context.request.model,
+            "model": context.request.setting.model,
             "messages":[{
                 "role": "system",
                 "content": context.request.systemPrompt
@@ -37,7 +37,7 @@ class Worker(RunnableWorker):
         })
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(context.request.endpoint, 
+            async with session.post(context.request.setting.endpoint, 
                                     headers=headers, json=payload) as response:
                 result = await response.json()
                 messages = [LlmMessage(

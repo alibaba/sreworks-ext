@@ -8,7 +8,6 @@ import sys
 from jinja2 import Environment
 
 import asyncio
-import shutil
 import os
 import re
 import json
@@ -69,9 +68,7 @@ class Worker(RunnableWorker):
 
             context.promise.resolve["llm"] = {
                 "runnableCode": "LLM_WORKER",
-                "endpoint": context.request.llmEndpoint,
-                "model": context.request.llmModel,
-                "secretKey": context.request.llmSecretKey,
+                "setting": context.request.llm.model_dump(),
                 "systemPrompt": systemPrompt,
                 "userPrompt": userPrompt,
             }
@@ -169,9 +166,7 @@ class Worker(RunnableWorker):
             if len(matches) > 0:
                 context.promise.resolve["llm"] = {
                     "runnableCode": "LLM_WORKER",
-                    "endpoint": context.request.llmEndpoint,
-                    "model": context.request.llmModel,
-                    "secretKey": context.request.llmSecretKey,
+                    "setting": context.request.llm.model_dump(),
                     "systemPrompt": context.data["runtime"]["systemPrompt"],
                     "userPrompt": matches[0],
                     "history": context.data["runtime"]["history"],
