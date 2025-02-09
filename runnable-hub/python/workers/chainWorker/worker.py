@@ -1,7 +1,7 @@
 
-from calendar import c
+from typing import Dict
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
-from .request.chainRequest import ChainRequest
+from .request.chainRequest import ChainRequest, ChainFunction
 from .request.chainFunction import ChainFunctionType
 from .response import ChainResponse
 import sys
@@ -12,6 +12,14 @@ import shutil
 import os
 import re
 import json
+
+
+# enter   -->     llmEnd        <----   llmStart
+#                    |                      ^ 
+#                    |                      |
+#                    v                      |    
+#               functionCallStart  --->  functionCallEnd  --->  finish
+            
 
 class Worker(RunnableWorker):
 
@@ -26,6 +34,17 @@ class Worker(RunnableWorker):
         self.jinjaEnv = Environment()
         with(open(self_dir + "/next.py", "r")) as h:
             self.nextPostScript = h.read()
+
+    @staticmethod
+    def fnInputMerge(fn: ChainFunction, inputs: Dict|str) -> Dict:
+        finalInputs = fn.presetInputs.copy()
+        if isinstance(inputs, str):
+            finalInputs.update({
+                fn.inputDefine[0].name: inputs
+            })
+        else:
+            finalInputs.update(inputs)
+        return finalInputs
 
     @staticmethod
     async def run_python(command, cwd=None, env=None):
@@ -91,7 +110,7 @@ class Worker(RunnableWorker):
             matches = re.findall(r"<finalAnswer>(.*?)</finalAnswer>", stdout, re.DOTALL)
             if len(matches) > 0:
                 context.status = RunnableStatus.SUCCESS
-                context.response = ChainResponse(finalAnswer=matches[0])
+                context.response = ChainResponse(finalAnswer=matches[0],history=context.data["runtime"]["history"])
                 return context
             
             matches = re.findall(r"<function>(.*?)</function>", stdout, re.DOTALL)
@@ -100,28 +119,22 @@ class Worker(RunnableWorker):
                 fnDefines = [fn for fn in context.request.functions if fn.name == fnCall["name"]]
                 if len(fnDefines) == 0:
                     context.status = RunnableStatus.ERROR
-                    context.errorMessage = "Function not found"
+                    context.errorMessage = f"Function:{fnCall['name']} not found"
                     return context
                 
                 fnDefine = fnDefines[0]
+
                 if fnDefine.type == ChainFunctionType.TOOL:
-                    inputs = fnDefine.presetInputs.copy()
-                    inputs.update(fnCall["input"])
-                    context.promise.resolve["functionCall"] = {
-                        "runnableCode": "TOOL_WOKRER",
-                        "toolCode": fnDefine.name,
-                        "toolVersion": fnDefine.version,
-                        "inputs": inputs,
-                    }
+                    runnableCode = "TOOL_WORKER"
                 elif fnDefine.type == ChainFunctionType.AGENT:
-                    inputs = fnDefine.presetInputs.copy()
-                    inputs.update(fnCall["input"])
-                    context.promise.resolve["functionCall"] = {
-                        "runnableCode": "AGENT_WOKRER",
-                        "toolCode": fnDefine.name,
-                        "toolVersion": fnDefine.version,
-                        "inputs": inputs,
-                    }
+                    runnableCode = "AGENT_WORKER"
+
+                context.promise.resolve["functionCall"] = {
+                    "runnableCode": runnableCode,
+                    "toolCode": fnDefine.name,
+                    "toolVersion": fnDefine.version,
+                    "inputs": self.fnInputMerge(fnDefine, fnCall["input"]),
+                }
                 context.data["runtime"]["nextStep"] = "functionCallEnd"
                 return context
             
