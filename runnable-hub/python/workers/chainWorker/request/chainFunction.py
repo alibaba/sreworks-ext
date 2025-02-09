@@ -14,4 +14,4 @@ class ChainFunction(BaseModel):
     version: str
     inputDefine: List[RunnableValueDefine] = []
     outputDefine: List[RunnableValueDefine] = []
-    presetInputs: Dict
+    presetInputs: Dict = {}
