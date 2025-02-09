@@ -6,7 +6,7 @@ import os
 import sys
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(current_dir))
+sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 # from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.worker import Worker as ApiWorker
