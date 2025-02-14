@@ -7,7 +7,6 @@ from .response import ChainResponse
 import sys
 from jinja2 import Environment
 
-import asyncio
 import os
 import re
 import json
@@ -45,17 +44,17 @@ class Worker(RunnableWorker):
             finalInputs.update(inputs)
         return finalInputs
 
-    @staticmethod
-    async def run_python(command, cwd=None, env=None):
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=cwd,
-            env=env
-        )
-        stdout, stderr = await process.communicate()
-        return process.returncode, stdout.decode(), stderr.decode()
+    # @staticmethod
+    # async def run_python(command, cwd=None, env=None):
+    #     process = await asyncio.create_subprocess_exec(
+    #         *command,
+    #         stdout=asyncio.subprocess.PIPE,
+    #         stderr=asyncio.subprocess.PIPE,
+    #         cwd=cwd,
+    #         env=env
+    #     )
+    #     stdout, stderr = await process.communicate()
+    #     return process.returncode, stdout.decode(), stderr.decode()
 
     async def onNext(self, context: RunnableContext[ChainRequest, ChainResponse]) -> RunnableContext:
 
