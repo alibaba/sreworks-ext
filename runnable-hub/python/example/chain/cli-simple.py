@@ -49,6 +49,8 @@ toolDefineYaml = """
       {"ip": "{{result.Answer[0].data}}"}
 """
 
+#       get_domain_ip: get_domain_ip(domain: str) -> str - A tool that can fetch the IP address of a domain.
+
 
 requestYaml = f"""
     llm:
@@ -62,6 +64,8 @@ requestYaml += """
     - type: TOOL
       name: get_domain_ip
       version: v1
+      description: |
+        A tool that can fetch the IP address of a domain.
       inputDefine:
       - name: domain
         type: STRING
@@ -69,7 +73,7 @@ requestYaml += """
     systemPrompt: |
       Respond to the human as helpfully and accurately as possible. You have access to the following tools:
 
-      get_domain_ip: get_domain_ip(domain: str) -> str - A tool that can fetch the IP address of a domain.
+      {{ tool_info }}
 
       Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
 

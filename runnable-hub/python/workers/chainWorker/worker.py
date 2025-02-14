@@ -63,6 +63,18 @@ class Worker(RunnableWorker):
             # todo merge function call defines
             renderData = context.request.data
 
+            renderData["tool_info"] = ""
+            renderData["function_info"] = ""
+            renderData["agent_info"] = ""
+            for fn in context.request.functions:
+                args = ", ".join([f"{arg.name}: {arg.type.value}" for arg in fn.inputDefine])
+                info_block = f"{fn.name}: {fn.name}({args}) - {fn.description}\n"
+                renderData["function_info"] += info_block
+                if fn.type == ChainFunctionType.TOOL:
+                    renderData["tool_info"] += info_block
+                elif fn.type == ChainFunctionType.AGENT:
+                    renderData["agent_info"] += info_block
+
             systemPrompt = self.jinjaEnv.from_string(context.request.systemPrompt).render(**renderData)
             userPrompt = self.jinjaEnv.from_string(context.request.userPrompt).render(**renderData)
 

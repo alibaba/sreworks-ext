@@ -14,6 +14,7 @@ class AgentDefine(BaseModel):
     postrun: Optional[Dict] = None
     inputDefine: List[RunnableValueDefine] = []
     outputDefine: List[RunnableValueDefine] = []
+    instanceDefine: List[RunnableValueDefine] = []
 
     chainFunctions: List[ChainFunction]
     instruction: str
