@@ -2,7 +2,7 @@
 from runnable import RunnableWorker, RunnableContext, RunnableStatus
 from runnable.store import RunnableFileStore, RunnableDatabaseStore
 from .request.agentRequest import AgentRequest
-# from .request.toolDefine import ToolDefine, ToolType
+from .request.agentDefine import AgentDefine
 from .response import AgentResponse
 from typing import Dict
 from datetime import datetime
@@ -17,22 +17,22 @@ class Worker(RunnableWorker):
     def __init__(self, store: RunnableFileStore|RunnableDatabaseStore):
         self.store = store
 
-    # def addTool(self, toolDefine: ToolDefine):
-    #     if isinstance(self.store, RunnableFileStore):
-    #         filePath = f"{toolDefine.toolCode}/{toolDefine.toolVersion}/define.json"
-    #         self.store.saveFile(filePath, toolDefine.model_dump_json())
-    #     else:
-    #         raise Exception("Not supported")
+    def addAgent(self, agentDefine: AgentDefine):
+        if isinstance(self.store, RunnableFileStore):
+            filePath = f"{agentDefine.agentCode}/{agentDefine.agentVersion}/define.json"
+            self.store.saveFile(filePath, agentDefine.model_dump_json())
+        else:
+            raise Exception("Not supported")
 
-    # def readTool(self, toolCode:str, toolVersion:str) -> ToolDefine:
-    #     if isinstance(self.store, RunnableFileStore):
-    #         filePath = f"{toolCode}/{toolVersion}/define.json"
-    #         return ToolDefine.model_validate_json(self.store.readFile(filePath))
-    #     else:
-    #         raise Exception("Not supported")
+    def readAgent(self, agentCode:str, agentVersion:str) -> AgentDefine:
+        if isinstance(self.store, RunnableFileStore):
+            filePath = f"{agentCode}/{agentVersion}/define.json"
+            return AgentDefine.model_validate_json(self.store.readFile(filePath))
+        else:
+            raise Exception("Not supported")
 
     async def onNext(self, context: RunnableContext[AgentRequest, AgentResponse]) -> RunnableContext:
-        toolDefine = self.readTool(context.request.toolCode, context.request.toolVersion)
+        toolDefine = self.readAgent(context.request.agentCode, context.request.agentVersion)
         if context.data.get("sendProcessRequest") is None:
             if toolDefine.toolType == ToolType.API:
                 processStepName = "api"

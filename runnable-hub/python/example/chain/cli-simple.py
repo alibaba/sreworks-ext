@@ -51,24 +51,28 @@ toolDefineYaml = """
 
 
 requestYaml = f"""
-    llmEndpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    llmModel: qwen-plus
-    llmSecretKey: {QWEN_SK}
+    llm:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
 """
+
 
 requestYaml += """
     functions: 
     - type: TOOL
       name: get_domain_ip
       version: v1
+      description: |
+        A tool that can fetch the IP address of a domain.
       inputDefine:
       - name: domain
         type: STRING
         required: true
     systemPrompt: |
       Respond to the human as helpfully and accurately as possible. You have access to the following tools:
-
-      get_domain_ip: get_domain_ip(domain: str) -> str - A tool that can fetch the IP address of a domain.
+ 
+      {{ tool_info }}
 
       Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
 

@@ -7,8 +7,6 @@ from .response import ChainResponse
 import sys
 from jinja2 import Environment
 
-import asyncio
-import shutil
 import os
 import re
 import json
@@ -46,17 +44,19 @@ class Worker(RunnableWorker):
             finalInputs.update(inputs)
         return finalInputs
 
-    @staticmethod
-    async def run_python(command, cwd=None, env=None):
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=cwd,
-            env=env
-        )
-        stdout, stderr = await process.communicate()
-        return process.returncode, stdout.decode(), stderr.decode()
+
+    # @staticmethod
+    # async def run_python(command, cwd=None, env=None):
+    #     process = await asyncio.create_subprocess_exec(
+    #         *command,
+    #         stdout=asyncio.subprocess.PIPE,
+    #         stderr=asyncio.subprocess.PIPE,
+    #         cwd=cwd,
+    #         env=env
+    #     )
+    #     stdout, stderr = await process.communicate()
+    #     return process.returncode, stdout.decode(), stderr.decode()
+
 
     async def onNext(self, context: RunnableContext[ChainRequest, ChainResponse]) -> RunnableContext:
 
@@ -64,14 +64,24 @@ class Worker(RunnableWorker):
             # todo merge function call defines
             renderData = context.request.data
 
+            renderData["tool_info"] = ""
+            renderData["function_info"] = ""
+            renderData["agent_info"] = ""
+            for fn in context.request.functions:
+                args = ", ".join([f"{arg.name}: {arg.type.value}" for arg in fn.inputDefine])
+                info_block = f"{fn.name}: {fn.name}({args}) - {fn.description}\n"
+                renderData["function_info"] += info_block
+                if fn.type == ChainFunctionType.TOOL:
+                    renderData["tool_info"] += info_block
+                elif fn.type == ChainFunctionType.AGENT:
+                    renderData["agent_info"] += info_block
+
             systemPrompt = self.jinjaEnv.from_string(context.request.systemPrompt).render(**renderData)
             userPrompt = self.jinjaEnv.from_string(context.request.userPrompt).render(**renderData)
 
             context.promise.resolve["llm"] = {
                 "runnableCode": "LLM_WORKER",
-                "endpoint": context.request.llmEndpoint,
-                "model": context.request.llmModel,
-                "secretKey": context.request.llmSecretKey,
+                "setting": context.request.llm.model_dump(),
                 "systemPrompt": systemPrompt,
                 "userPrompt": userPrompt,
             }
@@ -169,9 +179,7 @@ class Worker(RunnableWorker):
             if len(matches) > 0:
                 context.promise.resolve["llm"] = {
                     "runnableCode": "LLM_WORKER",
-                    "endpoint": context.request.llmEndpoint,
-                    "model": context.request.llmModel,
-                    "secretKey": context.request.llmSecretKey,
+                    "setting": context.request.llm.model_dump(),
                     "systemPrompt": context.data["runtime"]["systemPrompt"],
                     "userPrompt": matches[0],
                     "history": context.data["runtime"]["history"],
