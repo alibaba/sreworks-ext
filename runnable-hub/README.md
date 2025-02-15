@@ -4,23 +4,19 @@ Runnable Hub 是大模型中间件，可以用于管理和执行大模型相关�
 
 ```mermaid
 flowchart TD
-    bizApp1[AI业务应用1] -->|SDK| sub
-    bizApp2[AI业务应用2] -->|SDK| sub
-    sub["`
+    bizApp1(AI业务应用) -->|SDK| sub
+    bizApp2(AI业务应用2) -->|SDK| sub
+    sub[("`
     文件存储(本地|OSS|S3 ...)
     消息队列(Redis ...)
-    `"] --> hub1["`
+    `")] --> hub1[["`
     RunnableHub
-    Python`"]
-    sub --> hub2["`
+    Python`"]]
+    sub --> hub2[["`
     RunnableHub
-    Java`"]
+    Java`"]]
 
-    hub1 --> LLM_WORKER
-    hub1 --> PROCESS_WOKRER
-    hub1 --> API_WORKER
-    hub1 --> CHAIN_WORKER
-    hub2 --> AGENT_WORKER
-    hub2 --> TOOL_WORKTER
+    hub1 --> LLM_WORKER & PROCESS_WOKRER & API_WORKER & CHAIN_WORKER
+    hub2 --> AGENT_WORKER & TOOL_WORKTER
 
 ```
