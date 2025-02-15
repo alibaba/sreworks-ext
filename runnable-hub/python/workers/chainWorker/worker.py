@@ -44,6 +44,7 @@ class Worker(RunnableWorker):
             finalInputs.update(inputs)
         return finalInputs
 
+
     # @staticmethod
     # async def run_python(command, cwd=None, env=None):
     #     process = await asyncio.create_subprocess_exec(
@@ -55,6 +56,7 @@ class Worker(RunnableWorker):
     #     )
     #     stdout, stderr = await process.communicate()
     #     return process.returncode, stdout.decode(), stderr.decode()
+
 
     async def onNext(self, context: RunnableContext[ChainRequest, ChainResponse]) -> RunnableContext:
 

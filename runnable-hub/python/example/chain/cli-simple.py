@@ -49,8 +49,6 @@ toolDefineYaml = """
       {"ip": "{{result.Answer[0].data}}"}
 """
 
-#       get_domain_ip: get_domain_ip(domain: str) -> str - A tool that can fetch the IP address of a domain.
-
 
 requestYaml = f"""
     llm:
@@ -58,6 +56,7 @@ requestYaml = f"""
       model: qwen-plus
       secretKey: {QWEN_SK}
 """
+
 
 requestYaml += """
     functions: 
@@ -72,7 +71,7 @@ requestYaml += """
         required: true
     systemPrompt: |
       Respond to the human as helpfully and accurately as possible. You have access to the following tools:
-
+ 
       {{ tool_info }}
 
       Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).

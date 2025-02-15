@@ -16,3 +16,4 @@ class ChainFunction(BaseModel):
     outputDefine: List[RunnableValueDefine] = []
     presetInputs: Dict = {}
     description: Optional[str] = None
+
