@@ -27,4 +27,4 @@ SREWorks Development Resource Library serves as a comprehensive repository encom
 # AIOPS
 The `aiops` directory contains specialized libraries designed to assist with AI-driven operations for intelligent system management. These libraries offer an array of functionalities ranging from anomaly detection to log clustering. 
 # License
-This project is licensed under the Apache License 2.0 - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the GPL2 - see the [LICENSE](./LICENSE) file for details.

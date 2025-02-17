@@ -40,16 +40,13 @@ int trace_execve_enter(struct syscalls_enter_execve_args *ctx){
     event.uid = bpf_get_current_uid_gid();
 
     task = (struct task_struct *)bpf_get_current_task();
-    bpf_probe_read(&real_parent_task, sizeof(real_parent_task), &task->real_parent);
-    bpf_probe_read(&event.ppid,       sizeof(event.ppid),       &real_parent_task->pid);
-    bpf_probe_read(&event.pcomm,      sizeof(event.pcomm),      &real_parent_task->comm);
+    bpf_probe_read_kernel(&real_parent_task, sizeof(real_parent_task), &task->real_parent);
+    bpf_probe_read_kernel(&event.ppid,       sizeof(event.ppid),       &real_parent_task->pid);
+    bpf_probe_read_kernel(&event.pcomm,      sizeof(event.pcomm),      &real_parent_task->comm);
 
-    bpf_probe_read(&event.fname, sizeof(event.fname), (void *)ctx->filename);
+    bpf_probe_read_kernel(&event.fname, sizeof(event.fname), (void *)ctx->filename);
 
     int perf_ret = bpf_perf_event_output(ctx, &PERF_MAP, BPF_F_CURRENT_CPU, &event, sizeof(event));
-    if (perf_ret) {
-        bpf_printk("bpf_perf_event_output error code: [ %d ]\n", perf_ret);
-    }
 
     return 0;
 }
