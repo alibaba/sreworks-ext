@@ -11,8 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 from workers.shellWorker.worker import Worker as ShellWorker
 from workers.shellWorker.request.shellRequest import ShellRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 requestYaml = """
     run: uptime

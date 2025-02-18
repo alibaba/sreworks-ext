@@ -1,12 +1,12 @@
 import json
-from runnable import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
 from .request.apiRequest import ApiRequest, ApiHttpMethod
 from .response import ApiResponse
 import aiohttp
 
 class Worker(RunnableWorker):
 
-    runnableCode = "API_WORKER"
+    runnableCode = "API"
     Request = ApiRequest
     Response = ApiResponse
 

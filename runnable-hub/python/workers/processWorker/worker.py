@@ -1,7 +1,7 @@
 
 from datetime import datetime
 from typing import Dict, Any, List
-from runnable import RunnableWorker, RunnableContext, RunnableStatus
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
 from .request.processRequest import ProcessRequest
 from .request.processStep import ProcessStep
 from .response import ProcessResponse
@@ -23,7 +23,7 @@ def save_filter(value, target_dict):
 
 class Worker(RunnableWorker):
 
-    runnableCode = "PROCESS_WORKER"
+    runnableCode = "PROCESS"
     Request = ProcessRequest
     Response = ProcessResponse
 
@@ -58,27 +58,27 @@ class Worker(RunnableWorker):
             outputs = OutputRender('$SHELL_RUN_PATH/{outputFileName}')
             stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
             stepRender["request"] = {
-                "runnableCode": "SHELL_WORKER",
+                "runnableCode": "SHELL",
                 "run": stepRender["shell"],
                 "outputs": outputs.outputValueMap,
             }
         elif step.get("api") is not None:
             stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"] = stepRender["api"]
-            stepRender["request"]["runnableCode"] = "API_WORKER"
+            stepRender["request"]["runnableCode"] = "API"
         elif step.get("jinja") is not None:
             stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"] = stepRender["jinja"]
-            stepRender["request"]["runnableCode"] = "JINJA_WORKER"
+            stepRender["request"]["runnableCode"] = "JINJA"
         elif step.get("python") is not None:
             outputs = OutputRender("os.environ.get('PYTHON_RUN_PATH')+'/{outputFileName}'")
             stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
             stepRender["request"] = {
-                "runnableCode": "PYTHON_WORKER",
+                "runnableCode": "PYTHON",
                 "run": stepRender["python"],
                 "outputs": outputs.outputValueMap,
             }
-            stepRender["request"]["runnableCode"] = "PYTHON_WORKER"
+            stepRender["request"]["runnableCode"] = "PYTHON"
         else:
             stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
             stepRender["request"]["runnableCode"] = stepRender["runnableCode"]

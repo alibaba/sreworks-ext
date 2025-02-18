@@ -1,6 +1,6 @@
 
-from runnable import RunnableWorker, RunnableContext, RunnableStatus
-from runnable.store import RunnableFileStore, RunnableDatabaseStore
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
+from runnable_hub.store import RunnableFileStore, RunnableDatabaseStore
 from .request.agentRequest import AgentRequest
 from .request.agentDefine import AgentDefine
 from .response import AgentResponse
@@ -10,7 +10,7 @@ import json
 
 class Worker(RunnableWorker):
 
-    runnableCode = "AGENT_WORKER"
+    runnableCode = "AGENT"
     Request = AgentRequest
     Response = AgentResponse
 
@@ -40,7 +40,7 @@ class Worker(RunnableWorker):
                 raise Exception("Not supported")
 
             processRequest = {
-                "runnableCode": "PROCESS_WORKER",
+                "runnableCode": "PROCESS",
                 "outputs": "${{ jobs.call.outputs }}",
                 "jobs":{
                     "call": {

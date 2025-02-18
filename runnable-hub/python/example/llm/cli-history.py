@@ -11,8 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 from workers.llmWorker.worker import Worker as LlmWorker
 from workers.llmWorker.request.llmRequest import LlmRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 QWEN_SK = os.getenv("QWEN_SK")
 

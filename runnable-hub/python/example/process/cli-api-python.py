@@ -13,8 +13,8 @@ from workers.processWorker.worker import Worker as ProcessWorker
 from workers.processWorker.request.processRequest import ProcessRequest
 from workers.apiWorker.worker import Worker as ApiWorker
 # from workers.jinjaWorker.worker import Worker as JinjaWorker
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 QWEN_SK = os.getenv("QWEN_SK")
 

@@ -1,5 +1,5 @@
 
-from runnable import RunnableWorker, RunnableContext, RunnableStatus
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
 from .request.shellRequest import ShellRequest
 from .response import ShellResponse
 
@@ -10,7 +10,7 @@ import os
 
 class Worker(RunnableWorker):
 
-    runnableCode = "SHELL_WORKER"
+    runnableCode = "SHELL"
     Request = ShellRequest
     Response = ShellResponse
 

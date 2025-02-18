@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from runnable import RunnableValueDefine, RunnableValueDefineType
+from runnable_hub import RunnableValueDefine, RunnableValueDefineType
 from typing import Dict, List, Optional
 from .agentChainTemplate import AgentChainTemplate
 from ...chainWorker.request.chainFunction import ChainFunction
