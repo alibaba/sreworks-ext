@@ -11,8 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 from workers.apiWorker.worker import Worker as ApiWorker
 from workers.apiWorker.request.apiRequest import ApiRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 requestYaml = """
     url: https://cloudflare-dns.com/dns-query

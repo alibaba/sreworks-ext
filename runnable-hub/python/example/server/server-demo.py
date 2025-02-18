@@ -15,8 +15,8 @@ from workers.processWorker.worker import Worker as ProcessWorker
 from workers.apiWorker.request.apiRequest import ApiRequest
 from workers.shellWorker.request.shellRequest import ShellRequest
 from workers.processWorker.request.processRequest import ProcessRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 
 app = FastAPI()

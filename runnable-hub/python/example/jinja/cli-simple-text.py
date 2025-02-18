@@ -11,8 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
 from workers.jinjaWorker.worker import Worker as JinjaWorker
 from workers.jinjaWorker.request.jinjaRequest import JinjaRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 requestYaml = """
     template: |

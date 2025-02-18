@@ -1,5 +1,5 @@
 
-from runnable import RunnableWorker, RunnableContext, RunnableStatus
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
 from .request import PythonRequest
 from .response import PythonResponse
 import sys
@@ -10,7 +10,7 @@ import os
 
 class Worker(RunnableWorker):
 
-    runnableCode = "PYTHON_WORKER"
+    runnableCode = "PYTHON"
     Request = PythonRequest
     Response = PythonResponse
 

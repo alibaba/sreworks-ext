@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from runnable import RunnableOutputLoads
+from runnable_hub import RunnableOutputLoads
 from .toolType import ToolType
 from .toolParamSpec import ToolParamSpec
 from typing import Dict, List, Optional

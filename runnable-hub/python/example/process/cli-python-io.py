@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 from workers.processWorker.worker import Worker as ProcessWorker
 from workers.processWorker.request.processRequest import ProcessRequest
 from workers.pythonWorker.worker import Worker as PythonWorker
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 requestYaml = """
     jobs:

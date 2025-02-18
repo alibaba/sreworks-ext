@@ -1,5 +1,5 @@
 
-from runnable import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
 from .request.jinjaRequest import JinjaRequest
 from .response import JinjaResponse
 from jinja2 import Environment
@@ -7,7 +7,7 @@ import json
 
 class Worker(RunnableWorker):
 
-    runnableCode = "JINJA_WORKER"
+    runnableCode = "JINJA"
     Request = JinjaRequest
     Response = JinjaResponse
 

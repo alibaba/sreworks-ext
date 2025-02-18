@@ -1,10 +1,10 @@
 
 
-from runnable import RunnableResponse
+from runnable_hub import RunnableResponse
 from typing import Dict, Optional
 
 class PythonResponse(RunnableResponse):
-    runnableCode: str = "PYTHON_WORKER"
+    runnableCode: str = "PYTHON"
     stdout: str
     stderr: str
     returncode: int | None

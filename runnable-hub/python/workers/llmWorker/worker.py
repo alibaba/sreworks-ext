@@ -1,13 +1,13 @@
 import json
 from re import L
-from runnable import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus, RunnableOutputLoads
 from .request.llmRequest import LlmRequest
 from .response.llmResponse import LlmResponse, LlmMessage, LlmUsage
 import aiohttp
 
 class Worker(RunnableWorker):
 
-    runnableCode = "LLM_WORKER"
+    runnableCode = "LLM"
     Request = LlmRequest
     Response = LlmResponse
 

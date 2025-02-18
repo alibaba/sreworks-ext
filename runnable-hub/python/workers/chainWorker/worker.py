@@ -1,6 +1,6 @@
 
 from typing import Dict
-from runnable import RunnableWorker, RunnableContext, RunnableStatus
+from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
 from .request.chainRequest import ChainRequest, ChainFunction
 from .request.chainFunction import ChainFunctionType
 from .response import ChainResponse
@@ -21,7 +21,7 @@ import json
 
 class Worker(RunnableWorker):
 
-    runnableCode = "CHAIN_WORKER"
+    runnableCode = "CHAIN"
     Request = ChainRequest
     Response = ChainResponse
 
@@ -80,7 +80,7 @@ class Worker(RunnableWorker):
             userPrompt = self.jinjaEnv.from_string(context.request.userPrompt).render(**renderData)
 
             context.promise.resolve["llm"] = {
-                "runnableCode": "LLM_WORKER",
+                "runnableCode": "LLM",
                 "setting": context.request.llm.model_dump(),
                 "systemPrompt": systemPrompt,
                 "userPrompt": userPrompt,
@@ -100,7 +100,7 @@ class Worker(RunnableWorker):
                 raise ValueError("LLM response is missing")
             
             context.promise.resolve["processMessage"] = {
-                "runnableCode": "PYTHON_WORKER",
+                "runnableCode": "PYTHON",
                 "data": {
                     "completion": context.promise.result["llm"]["content"],
                 },
@@ -135,9 +135,9 @@ class Worker(RunnableWorker):
                 fnDefine = fnDefines[0]
 
                 if fnDefine.type == ChainFunctionType.TOOL:
-                    runnableCode = "TOOL_WORKER"
+                    runnableCode = "TOOL"
                 elif fnDefine.type == ChainFunctionType.AGENT:
-                    runnableCode = "AGENT_WORKER"
+                    runnableCode = "AGENT"
 
                 context.promise.resolve["functionCall"] = {
                     "runnableCode": runnableCode,
@@ -158,7 +158,7 @@ class Worker(RunnableWorker):
                 raise ValueError("functionCall response is missing")
             
             context.promise.resolve["processMessage"] = {
-                "runnableCode": "PYTHON_WORKER",
+                "runnableCode": "PYTHON",
                 "data": {
                     "function": json.dumps(context.promise.result["functionCall"]["outputs"]),
                     "completion": context.data["runtime"]["lastCompletion"],
@@ -178,7 +178,7 @@ class Worker(RunnableWorker):
             matches = re.findall(r"<message>(.*?)</message>", stdout, re.DOTALL)
             if len(matches) > 0:
                 context.promise.resolve["llm"] = {
-                    "runnableCode": "LLM_WORKER",
+                    "runnableCode": "LLM",
                     "setting": context.request.llm.model_dump(),
                     "systemPrompt": context.data["runtime"]["systemPrompt"],
                     "userPrompt": matches[0],
