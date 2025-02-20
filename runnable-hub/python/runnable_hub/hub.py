@@ -5,8 +5,8 @@ import asyncio
 import uuid
 from abc import ABC, abstractmethod
 from .context import RunnableRequest, RunnableContext, RunnableStatus
-from .store import RunnableFileStore
-from typing import Dict
+from .interface import RunnableFileStore, RunnableQueueBus, RunnableQueue
+from .queue import RunnableLocalQueueBus
 import os
 import traceback
 
@@ -21,11 +21,12 @@ class RunnableWorker(ABC):
 
 class RunnableHub():
 
-    def __init__(self, store: RunnableFileStore):
+    def __init__(self, store: RunnableFileStore, queueBus: RunnableQueueBus = RunnableLocalQueueBus()):
         self.workers = {}
         self.requests = {}
         self.responses = {}
         self.store = store
+        self.queueBus = queueBus
 
 
     @staticmethod
@@ -35,7 +36,7 @@ class RunnableHub():
     def registerWorker(self, worker: RunnableWorker):
         self.workers[worker.runnableCode] = RunnableWorkerDispatch(
             worker=worker,
-            queue=asyncio.Queue(),
+            queue=self.queueBus.register(worker.runnableCode),
             store=self.store,
             hub=self
         )
@@ -73,14 +74,14 @@ class RunnableHub():
             status=RunnableStatus.PENDING)
         
         self.store.saveFile(f"{newContext.storePath}/context.json", newContext.model_dump_json())
-        await self.workers[newContext.runnableCode].queue.put(f"{newContext.storePath}/context.json|")
+        await self.workers[newContext.runnableCode].queue.send(f"{newContext.storePath}/context.json|")
         return newContext
     
     async def parentExecuteNext(self, context: RunnableContext):
         if context.parentExecuteId is None or context.parentRunnableCode is None or context.name is None:
             return
         parentStorePath = os.path.dirname(context.storePath)
-        await self.workers[context.parentRunnableCode].queue.put(f"{parentStorePath}/context.json|{context.runnableCode}#{context.name}={self.shortExecuteId(context.executeId)}")
+        await self.workers[context.parentRunnableCode].queue.send(f"{parentStorePath}/context.json|{context.runnableCode}#{context.name}={self.shortExecuteId(context.executeId)}")
 
     async def executeWait(self, context: RunnableContext) -> RunnableContext:
         while context.status not in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
@@ -90,11 +91,11 @@ class RunnableHub():
 
 class RunnableWorkerDispatch():
     worker: RunnableWorker
-    queue: asyncio.Queue
+    queue: RunnableQueue
     store: RunnableFileStore
     hub: RunnableHub
 
-    def __init__(self, worker: RunnableWorker, queue: asyncio.Queue, store: RunnableFileStore, hub: RunnableHub):
+    def __init__(self, worker: RunnableWorker, queue: RunnableQueue, store: RunnableFileStore, hub: RunnableHub):
         self.worker = worker
         self.queue = queue
         self.store = store
@@ -104,7 +105,7 @@ class RunnableWorkerDispatch():
     async def run(self):
         while True:
             print(f"RunnableWorkerDispatch {self.worker.runnableCode} wait")
-            message = await self.queue.get()
+            message = await self.queue.receive()
             contextFile, callbacks = message.split("|", 1)
             if callbacks != "":
                 print(f"RunnableWorkerDispatch {self.worker.runnableCode} get message {contextFile} with callback {callbacks}")
