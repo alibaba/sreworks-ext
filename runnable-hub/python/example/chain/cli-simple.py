@@ -9,15 +9,15 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.chainWorker.worker import Worker as ChainWorker
-from workers.toolWorker.worker import Worker as ToolWorker
-from workers.pythonWorker.worker import Worker as PythonWorker
-from workers.llmWorker.worker import Worker as LlmWorker
-from workers.processWorker.worker import Worker as ProcessWorker
-from workers.jinjaWorker.worker import Worker as JinjaWorker
-from workers.apiWorker.worker import Worker as ApiWorker
-from workers.chainWorker.request.chainRequest import ChainRequest
-from workers.toolWorker.request.toolDefine import ToolDefine
+from runnable_workers.chainWorker.worker import Worker as ChainWorker
+from runnable_workers.toolWorker.worker import Worker as ToolWorker
+from runnable_workers.pythonWorker.worker import Worker as PythonWorker
+from runnable_workers.llmWorker.worker import Worker as LlmWorker
+from runnable_workers.processWorker.worker import Worker as ProcessWorker
+from runnable_workers.jinjaWorker.worker import Worker as JinjaWorker
+from runnable_workers.apiWorker.worker import Worker as ApiWorker
+from runnable_workers.chainWorker.request.chainRequest import ChainRequest
+from runnable_workers.toolWorker.request.toolDefine import ToolDefine
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 

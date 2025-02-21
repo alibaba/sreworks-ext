@@ -9,10 +9,10 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.processWorker.worker import Worker as ProcessWorker
-from workers.processWorker.request.processRequest import ProcessRequest
-from workers.apiWorker.worker import Worker as ApiWorker
-from workers.jinjaWorker.worker import Worker as JinjaWorker
+from runnable_workers.processWorker.worker import Worker as ProcessWorker
+from runnable_workers.processWorker.request.processRequest import ProcessRequest
+from runnable_workers.apiWorker.worker import Worker as ApiWorker
+from runnable_workers.jinjaWorker.worker import Worker as JinjaWorker
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 

@@ -8,13 +8,13 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-# from workers.processWorker.worker import Worker as ProcessWorker
-from workers.apiWorker.worker import Worker as ApiWorker
-from workers.shellWorker.worker import Worker as ShellWorker
-from workers.processWorker.worker import Worker as ProcessWorker
-from workers.apiWorker.request.apiRequest import ApiRequest
-from workers.shellWorker.request.shellRequest import ShellRequest
-from workers.processWorker.request.processRequest import ProcessRequest
+# from runnable_workers.processWorker.worker import Worker as ProcessWorker
+from runnable_workers.apiWorker.worker import Worker as ApiWorker
+from runnable_workers.shellWorker.worker import Worker as ShellWorker
+from runnable_workers.processWorker.worker import Worker as ProcessWorker
+from runnable_workers.apiWorker.request.apiRequest import ApiRequest
+from runnable_workers.shellWorker.request.shellRequest import ShellRequest
+from runnable_workers.processWorker.request.processRequest import ProcessRequest
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 

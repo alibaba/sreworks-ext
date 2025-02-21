@@ -9,8 +9,8 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.llmWorker.worker import Worker as LlmWorker
-from workers.llmWorker.request.llmRequest import LlmRequest
+from runnable_workers.llmWorker.worker import Worker as LlmWorker
+from runnable_workers.llmWorker.request.llmRequest import LlmRequest
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 

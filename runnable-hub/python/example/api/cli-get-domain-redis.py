@@ -9,8 +9,8 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.apiWorker.worker import Worker as ApiWorker
-from workers.apiWorker.request.apiRequest import ApiRequest
+from runnable_workers.apiWorker.worker import Worker as ApiWorker
+from runnable_workers.apiWorker.request.apiRequest import ApiRequest
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 from runnable_hub.queue.redis import RunnableRedisQueueBus
