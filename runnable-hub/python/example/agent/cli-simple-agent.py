@@ -17,15 +17,33 @@ from workers.agentWorker.request.agentDefine import AgentDefine
 from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 
-requestYaml = """
+defineToolYaml = """
     toolCode: get_domain_ip
     toolVersion: v1
-    inputs:
-      domain: baidu.com
+    toolType: API
+    setting:
+      outputLoads: JSON
+      headers: 
+        Accept: application/dns-json
+      params:
+        name: "{{ inputs.domain }}"
+        type: A
+      url: https://cloudflare-dns.com/dns-query
+      method: GET
+    inputSpec:
+    - name: domain
+      type: STRING
+      required: true
+    outputSpec:
+    - name: ip
+      type: STRING
+    outputsLoads: JSON
+    outputTemplate: |
+      {"ip": "{{result.Answer[0].data}}"}
 """
 
-defineYaml = """
-    agentCode: simple_uptime
+defineAgentYaml = """
+    agentCode: domain_checker
     agentVersion: v1
     reasoningRunnables:
     - toolCode: uptime
