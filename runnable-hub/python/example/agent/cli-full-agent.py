@@ -165,6 +165,31 @@ defineAgentYaml = """
     - type: TOOL
       name: get_domain_ip
       version: v1
+    prerun: 
+      chainInputs: 
+        prompt: ${{ jobs.replace.outputs }}
+      jobs:
+        replace:
+          outputs: ${{ steps.replace_text.outputs.prompt }}
+          steps:
+          - id: replace_text
+            python: |
+              import os
+              h = open(${{ outputs.prompt.path }}, "w")
+              h.write('${{ inputs.prompt }}'.replace('**', 'baidu.com'))
+              h.close()
+    postrun:
+      outputs: ${{ jobs.notice.outputs }}
+      jobs:
+        notice:
+          outputs: ${{ steps.notice_step.outputs.result }}
+          steps:
+          - id: notice_step
+            python: |
+              import os
+              h = open(${{ outputs.result.path }}, "w")
+              h.write('${{ inputs.chainAnswer }} this is postrun ')
+              h.close()
     instruction: |
       你是一个检查域名的智能体，能够告诉用户一个域名对应的IP地址。
     chainTemplateCode: default-chain
@@ -176,7 +201,7 @@ requestYaml = """
     agentCode: domain_checker
     agentVersion: v1
     inputs:
-      prompt: "What is the IP address of www.baidu.com?"
+      prompt: "What is the IP address of **?"
 """
 
 

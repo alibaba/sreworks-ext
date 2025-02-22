@@ -74,9 +74,16 @@ class Worker(RunnableWorker):
         if context.data.get("inputs") is None:
             context.data["inputs"] = context.request.inputs
             context.data["outputs"] = {}
+            context.data["stage"] = []
+            if agentDefine.prerun is not None:
+                context.data["stage"].append("prerun")
+            if agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None:
+                context.data["stage"].append("chain")
+            if agentDefine.postrun is not None:
+                context.data["stage"].append("postrun")
 
         # prerun
-        if agentDefine.prerun is not None:
+        if len(context.data["stage"]) > 0 and context.data["stage"][0] == "prerun" and agentDefine.prerun is not None:
             if context.data.get("sendPrerunRequest") is None:
                 prerunRequest = {
                     "runnableCode": "PROCESS",
@@ -91,7 +98,7 @@ class Worker(RunnableWorker):
                 context.data["sendPrerunRequest"] = datetime.now()
                 return context
             else:
-                if context.promise.result["prerun"] is None:
+                if context.promise.result.get("prerun") is None:
                     raise ValueError("prerun response is missing")
                 
                 # 将prerun的执行outputs更新到inputs或outputs
@@ -100,8 +107,13 @@ class Worker(RunnableWorker):
                 elif agentDefine.prerun.get("outputs") is not None:
                     context.data["outputs"] = context.promise.result["prerun"]["outputs"]
 
+                context.data["stage"].remove("prerun")
+
         # chain
-        if agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None:
+
+        if len(context.data["stage"]) > 0 and context.data["stage"][0] == "chain" \
+            and (agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None):
+            
             if context.data.get("sendChainRequest") is None:
                 if agentDefine.chainTemplate is not None:
                     chainTemplate = {
@@ -153,13 +165,16 @@ class Worker(RunnableWorker):
             else:
                 if context.promise.result["chain"] is None:
                     raise ValueError("chain response is missing")
+
                 if agentDefine.postrun is None:
                     context.data["outputs"] = context.promise.result["chain"]["finalAnswer"]
                 else:
                     context.data["inputs"]["chainAnswer"] = context.promise.result["chain"]["finalAnswer"]
-    
+                
+                context.data["stage"].remove("chain")
+
         # postrun
-        if agentDefine.postrun is not None:
+        if len(context.data["stage"]) > 0 and context.data["stage"][0] == "postrun" and agentDefine.postrun is not None:
             if context.data.get("sendPostrunRequest") is None:
                 prerunRequest = {
                     "runnableCode": "PROCESS",

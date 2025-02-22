@@ -20,7 +20,8 @@ class AgentDefine(BaseModel):
     instruction: str
     
     llm: Optional[LlmSetting] = None
-    llmCode: Optional[str]
+    llmCode: Optional[str] = None
 
     chainTemplate: Optional[AgentChainTemplate] = None
-    chainTemplateCode: Optional[str]
+    chainTemplateCode: Optional[str] = None
+    

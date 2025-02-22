@@ -79,9 +79,15 @@ class Worker(RunnableWorker):
                 "outputs": outputs.outputValueMap,
             }
             stepRender["request"]["runnableCode"] = "PYTHON"
-        else:
+        elif step.get("tool") is not None:
+            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
+            stepRender["request"] = stepRender["tool"]
+            stepRender["request"]["runnableCode"] = "TOOL"     
+        elif step.get("runnableCode") is not None:
             stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"]["runnableCode"] = stepRender["runnableCode"]
+        else:
+            raise RuntimeError(f"step {step} has no runnableCode")
         return stepRender
 
 

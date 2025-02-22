@@ -13,3 +13,4 @@ class ProcessStep(BaseModel):
     api: Optional[Dict|str] = None
     jinja: Optional[Dict] = None
     python: Optional[str] = None
+    tool: Optional[Dict] = None
