@@ -98,7 +98,7 @@ class Worker(RunnableWorker):
                 if agentDefine.prerun.get("chainInputs") is not None:
                     context.data["inputs"].update(context.promise.result["prerun"]["outputs"])
                 elif agentDefine.prerun.get("outputs") is not None:
-                    context.data["outputs"].update(context.promise.result["prerun"]["outputs"])
+                    context.data["outputs"] = context.promise.result["prerun"]["outputs"]
 
         # chain
         if agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None:
@@ -174,8 +174,8 @@ class Worker(RunnableWorker):
                 if context.promise.result["postrun"] is None:
                     raise ValueError("postrun response is missing")
                 
-                # 将postrun的执行outputs更新到inputs或outputs
-                context.data["outputs"].update(context.promise.result["postrun"]["outputs"])
+                context.data["outputs"] = context.promise.result["postrun"]["outputs"]
+        
 
         context.status = RunnableStatus.SUCCESS
         context.response = AgentResponse(success=True, outputs=context.data["outputs"])
