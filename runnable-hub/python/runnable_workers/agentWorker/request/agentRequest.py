@@ -6,4 +6,3 @@ class AgentRequest(RunnableRequest):
     agentCode: str
     agentVersion: str
     inputs: Dict
-    prompt: str

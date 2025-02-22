@@ -1,6 +1,6 @@
 
 from runnable_hub import RunnableWorker, RunnableContext, RunnableStatus
-from runnable_hub.store import RunnableFileStore, RunnableDatabaseStore
+from runnable_hub.interface import RunnableFileStore, RunnableDatabaseStore
 from .request.toolRequest import ToolRequest
 from .request.toolDefine import ToolDefine, ToolType
 from .response import ToolResponse

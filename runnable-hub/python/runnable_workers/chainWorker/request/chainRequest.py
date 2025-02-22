@@ -13,4 +13,3 @@ class ChainRequest(RunnableRequest):
     systemPrompt: str
     userPrompt: str
     onNext: str
-    # chainInterpreter: str

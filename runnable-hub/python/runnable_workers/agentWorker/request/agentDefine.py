@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from runnable_hub import RunnableValueDefine, RunnableValueDefineType
 from typing import Dict, List, Optional
 from .agentChainTemplate import AgentChainTemplate
-from ...chainWorker.request.chainFunction import ChainFunction
+from .agentFunction import AgentFunction
 from ...llmWorker.request.llmSetting import LlmSetting
 
 
@@ -16,7 +16,7 @@ class AgentDefine(BaseModel):
     outputDefine: List[RunnableValueDefine] = []
     instanceDefine: List[RunnableValueDefine] = []
 
-    chainFunctions: List[ChainFunction]
+    functions: List[AgentFunction]
     instruction: str
     
     llm: Optional[LlmSetting]

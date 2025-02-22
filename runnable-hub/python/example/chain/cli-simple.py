@@ -59,6 +59,9 @@ requestYaml = f"""
 
 
 requestYaml += """
+    data:
+      inputs:
+        prompt: What is the IP address of baidu.com?
     functions: 
     - type: TOOL
       name: get_domain_ip
@@ -109,7 +112,7 @@ requestYaml += """
     userPrompt: |
       Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
       Thought:
-      Human: What is the IP address of baidu.com?
+      Human: {{ inputs.prompt }}
     
     onNext: |
       import re
