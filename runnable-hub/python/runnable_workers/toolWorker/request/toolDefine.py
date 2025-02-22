@@ -15,3 +15,4 @@ class ToolDefine(BaseModel):
     outputSpec: List[ToolParamSpec] = []     # 输出变量结构
     outputsLoads: RunnableOutputLoads = RunnableOutputLoads.TEXT
     outputTemplate: Optional[str] = None     # 输出模板
+    description: Optional[str] = None        # 工具描述

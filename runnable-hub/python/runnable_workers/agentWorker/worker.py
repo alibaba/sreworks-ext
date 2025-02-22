@@ -4,7 +4,9 @@ from runnable_hub.interface import RunnableFileStore, RunnableDatabaseStore
 from .request.agentRequest import AgentRequest
 from .request.agentDefine import AgentDefine
 from .request.agentChainTemplate import AgentChainTemplate
+from .request.agentFunction import AgentFunctionType
 from ..llmWorker.request.llmSetting import LlmSetting
+from ..toolWorker.worker import Worker as ToolWorker
 from .response import AgentResponse
 from typing import Dict
 from datetime import datetime
@@ -16,8 +18,9 @@ class Worker(RunnableWorker):
     Request = AgentRequest
     Response = AgentResponse
 
-    def __init__(self, store: RunnableFileStore|RunnableDatabaseStore):
+    def __init__(self, store: RunnableFileStore|RunnableDatabaseStore, toolWorker: ToolWorker):
         self.store = store
+        self.toolWorker = toolWorker
 
     def addAgent(self, agentDefine: AgentDefine):
         if isinstance(self.store, RunnableFileStore):
@@ -91,12 +94,25 @@ class Worker(RunnableWorker):
             else:
                 raise Exception("No llm")
 
-            # for agentDefine.functions 
+            chainFunctions = []
+            toolCodeVersions = [f"{f.name}:{f.version}" for f in agentDefine.functions if f.type == AgentFunctionType.TOOL]
+            toolMap = {tool.toolCode: tool for tool in await self.toolWorker.readTools(toolCodeVersions)}
+            for f in agentDefine.functions:
+                if f.type == AgentFunctionType.TOOL:
+                    chainFunctions.append({
+                        "type": "TOOL",
+                        "name": f.name,
+                        "version": f.version,
+                        "description": toolMap[f.name].description,
+                        "inputDefine": toolMap[f.name].inputSpec,
+                        "presetInputs": f.presetInputs,
+                    })
 
             chainRequest = {
                 "runnableCode": "CHAIN",
                 "data": context.request.inputs,
                 "llm": llm,
+                "chainFunctions": chainFunctions,
             }
             chainRequest.update(chainTemplate)
             context.promise.resolve["chain"] = chainRequest

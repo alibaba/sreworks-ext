@@ -4,7 +4,7 @@ from runnable_hub.interface import RunnableFileStore, RunnableDatabaseStore
 from .request.toolRequest import ToolRequest
 from .request.toolDefine import ToolDefine, ToolType
 from .response import ToolResponse
-from typing import Dict
+from typing import Dict, List
 from datetime import datetime
 import json
 
@@ -28,6 +28,14 @@ class Worker(RunnableWorker):
         if isinstance(self.store, RunnableFileStore):
             filePath = f"{toolCode}/{toolVersion}/define.json"
             return ToolDefine.model_validate_json(self.store.readFile(filePath))
+        else:
+            raise Exception("Not supported")
+    
+    # example toolCodeVersions 
+    # ["get_domain_ip:v1"]
+    async def readTools(self, toolCodeVersions: List[str]) -> List[ToolDefine]:
+        if isinstance(self.store, RunnableFileStore):
+            return [self.readTool(toolCodeVersion.split(":")[0], toolCodeVersion.split(":")[1]) for toolCodeVersion in toolCodeVersions]
         else:
             raise Exception("Not supported")
 

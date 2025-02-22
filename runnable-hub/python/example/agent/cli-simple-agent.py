@@ -35,6 +35,8 @@ defineToolYaml = """
     toolCode: get_domain_ip
     toolVersion: v1
     toolType: API
+    description: |
+      This tool is used to get the IP address of a domain.
     setting:
       outputLoads: JSON
       headers: 
@@ -180,8 +182,8 @@ requestYaml = """
 async def main():
 
     runnableHub = RunnableHub(store=RunnableLocalFileStore("/tmp/runnableHub/context"))
-    agentWorker = AgentWorker(store=RunnableLocalFileStore("/tmp/runnableHub/agent"))
     toolWorker = ToolWorker(store=RunnableLocalFileStore("/tmp/runnableHub/tool"))
+    agentWorker = AgentWorker(store=RunnableLocalFileStore("/tmp/runnableHub/agent"), toolWorker=toolWorker)
     
     toolWorker.addTool(ToolDefine.model_validate_json(json.dumps(yaml.safe_load(defineToolYaml))))
     agentWorker.addAgent(AgentDefine.model_validate_json(json.dumps(yaml.safe_load(defineAgentYaml))))
