@@ -12,6 +12,10 @@ from typing import Dict
 from datetime import datetime
 import json
 
+# inputs -> prerun -> outputs
+# inputs -> chain -> outputs
+# inputs -> postrun -> outputs
+
 class Worker(RunnableWorker):
 
     runnableCode = "AGENT"
@@ -67,6 +71,35 @@ class Worker(RunnableWorker):
     async def onNext(self, context: RunnableContext[AgentRequest, AgentResponse]) -> RunnableContext:
         agentDefine = self.readAgent(context.request.agentCode, context.request.agentVersion)
       
+        if context.data.get("inputs") is None:
+            context.data["inputs"] = context.request.inputs
+            context.data["outputs"] = {}
+
+        # prerun
+        if agentDefine.prerun is not None:
+            if context.data.get("sendPrerunRequest") is None:
+                prerunRequest = {
+                    "runnableCode": "PROCESS",
+                    "inputs": context.request.inputs,
+                    "jobs": agentDefine.prerun.get("jobs", {}),
+                }
+                if agentDefine.prerun.get("chainInputs") is not None:
+                    prerunRequest["outputs"] = agentDefine.prerun.get("chainInputs")
+                elif agentDefine.prerun.get("outputs") is not None:
+                    prerunRequest["outputs"] = agentDefine.prerun.get("outputs")
+                context.promise.resolve["prerun"] = prerunRequest
+                context.data["sendPrerunRequest"] = datetime.now()
+                return context
+            else:
+                if context.promise.result["prerun"] is None:
+                    raise ValueError("prerun response is missing")
+                
+                # 将prerun的执行outputs更新到inputs或outputs
+                if agentDefine.prerun.get("chainInputs") is not None:
+                    context.data["inputs"].update(context.promise.result["prerun"]["outputs"])
+                elif agentDefine.prerun.get("outputs") is not None:
+                    context.data["outputs"].update(context.promise.result["prerun"]["outputs"])
+
         # chain
         if agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None:
             if context.data.get("sendChainRequest") is None:
@@ -108,7 +141,7 @@ class Worker(RunnableWorker):
                 chainRequest = {
                     "runnableCode": "CHAIN",
                     "data": {
-                        "inputs": context.request.inputs,
+                        "inputs": context.data["inputs"],
                     },
                     "llm": llm,
                     "functions": chainFunctions,
@@ -121,11 +154,31 @@ class Worker(RunnableWorker):
                 if context.promise.result["chain"] is None:
                     raise ValueError("chain response is missing")
                 if agentDefine.postrun is None:
-                    context.status = RunnableStatus.SUCCESS
-                    context.response = AgentResponse(success=True, outputs=context.promise.result["chain"]["finalAnswer"])
-                    return context
+                    context.data["outputs"] = context.promise.result["chain"]["finalAnswer"]
+                else:
+                    context.data["inputs"]["chainAnswer"] = context.promise.result["chain"]["finalAnswer"]
+    
+        # postrun
+        if agentDefine.postrun is not None:
+            if context.data.get("sendPostrunRequest") is None:
+                prerunRequest = {
+                    "runnableCode": "PROCESS",
+                    "inputs": context.data["inputs"],
+                    "jobs": agentDefine.postrun.get("jobs", {}),
+                    "outputs": agentDefine.postrun.get("outputs"),
+                }
+                context.promise.resolve["postrun"] = prerunRequest
+                context.data["sendPostrunRequest"] = datetime.now()
+                return context
+            else:
+                if context.promise.result["postrun"] is None:
+                    raise ValueError("postrun response is missing")
                 
+                # 将postrun的执行outputs更新到inputs或outputs
+                context.data["outputs"].update(context.promise.result["postrun"]["outputs"])
 
+        context.status = RunnableStatus.SUCCESS
+        context.response = AgentResponse(success=True, outputs=context.data["outputs"])
         return context
 
 

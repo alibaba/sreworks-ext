@@ -7,3 +7,4 @@ class ProcessRequest(RunnableRequest):
     runnableCode: str = "PROCESS"
     jobs: Dict[str, ProcessJob]
     outputs: Optional[Dict|str] = None
+    inputs: Dict = {}

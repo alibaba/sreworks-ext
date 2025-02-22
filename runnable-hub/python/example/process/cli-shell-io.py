@@ -16,12 +16,14 @@ from runnable_hub import RunnableHub
 from runnable_hub.store import RunnableLocalFileStore
 
 requestYaml = """
+    inputs:
+      test_var: test
     jobs:
       test:
         steps:
         - id: testStep1
           shell: |
-            echo "set output abc = 'hello world' "
+            echo "set output abc = 'hello world ${{ inputs.test_var }}' "
             echo "hello world" > ${{ outputs.abc.path }}
         - id: testStep2
           shell: |

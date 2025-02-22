@@ -51,28 +51,28 @@ class Worker(RunnableWorker):
         else:
             return target
 
-    def make_worker_request(self, step, stepOutputs) -> Dict:
+    def make_worker_request(self, step, stepOutputs, inputs) -> Dict:
 
         # stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
         if step.get("shell") is not None:
             outputs = OutputRender('$SHELL_RUN_PATH/{outputFileName}')
-            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
+            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"] = {
                 "runnableCode": "SHELL",
                 "run": stepRender["shell"],
                 "outputs": outputs.outputValueMap,
             }
         elif step.get("api") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
+            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"] = stepRender["api"]
             stepRender["request"]["runnableCode"] = "API"
         elif step.get("jinja") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
+            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"] = stepRender["jinja"]
             stepRender["request"]["runnableCode"] = "JINJA"
         elif step.get("python") is not None:
             outputs = OutputRender("os.environ.get('PYTHON_RUN_PATH')+'/{outputFileName}'")
-            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
+            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"] = {
                 "runnableCode": "PYTHON",
                 "run": stepRender["python"],
@@ -80,7 +80,7 @@ class Worker(RunnableWorker):
             }
             stepRender["request"]["runnableCode"] = "PYTHON"
         else:
-            stepRender:Any = self.complexRender({"steps": stepOutputs}, step)
+            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
             stepRender["request"]["runnableCode"] = stepRender["runnableCode"]
         return stepRender
 
@@ -132,14 +132,14 @@ class Worker(RunnableWorker):
                     checkJob["jobStatus"] = "ERROR"
                     checkJob["endTime"] = datetime.now()
             elif len(job["steps"]) > 0:
-                step = self.make_worker_request(job["steps"].pop(0), job["stepOutputs"])
+                step = self.make_worker_request(job["steps"].pop(0), job["stepOutputs"], context.request.inputs)
                 job["currentStepId"] = step["id"]
                 context.promise.resolve[jobId] = step["request"]
             else:
                 job["jobStatus"] = "SUCCESS"
                 job["endTime"] = datetime.now()
                 if job["outputs"] is not None:
-                    job["outputs"] = self.complexRender({"steps": job["stepOutputs"]}, job["outputs"])
+                    job["outputs"] = self.complexRender({"steps": job["stepOutputs"], "inputs": context.request.inputs}, job["outputs"])
                 for checkJob in context.data["runtime"].values():
                     if jobId in checkJob["needs"]:
                         checkJob["needs"].remove(jobId)
@@ -152,7 +152,7 @@ class Worker(RunnableWorker):
             context.status = RunnableStatus.SUCCESS
             if context.request.outputs is not None:
                 jobOutputs = {jobId: {"outputs":job["outputs"]} for jobId, job in context.data["runtime"].items()}
-                processOutputs = self.complexRender({"jobs": jobOutputs}, context.request.outputs)
+                processOutputs = self.complexRender({"jobs": jobOutputs, "inputs": context.request.inputs}, context.request.outputs)
                 context.response = ProcessResponse(outputs=processOutputs) # type: ignore
 
         elif allStatus == set(["ERROR"]) or allStatus == set(["ERROR","SUCCESS"]):
