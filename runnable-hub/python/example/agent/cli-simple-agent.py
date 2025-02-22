@@ -188,11 +188,6 @@ async def main():
     
     toolWorker.addTool(ToolDefine.model_validate_json(json.dumps(yaml.safe_load(defineToolYaml))))
     agentWorker.addAgent(AgentDefine.model_validate_json(json.dumps(yaml.safe_load(defineAgentYaml))))
-    # chainTemplate = yaml.safe_load(defineChainTemplateYaml)
-    # h = open('onNext.py', 'r')
-    # chainTemplate["onNext"] = h.read()
-    # h.close()
-    # print(chainTemplate)
     agentWorker.addChainTemplate("default-chain", AgentChainTemplate.model_validate_json(json.dumps(yaml.safe_load(defineChainTemplateYaml))))
     agentWorker.addLlm("qwen-test", LlmSetting.model_validate_json(json.dumps(yaml.safe_load(definellmYaml))))
 
