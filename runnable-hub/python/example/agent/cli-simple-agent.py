@@ -105,8 +105,8 @@ defineChainTemplateYaml = """
       userPrompt: |
         Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
         Thought:
-        Human: {{ input.prompt }}
-    
+        Human: {{ inputs.prompt }}
+
       onNext: |
         import re
         import json
@@ -151,6 +151,7 @@ defineChainTemplateYaml = """
             context.do.message = "Observation: " + context.function
 
           return context
+
 """
 
 defineAgentYaml = """
@@ -187,8 +188,13 @@ async def main():
     
     toolWorker.addTool(ToolDefine.model_validate_json(json.dumps(yaml.safe_load(defineToolYaml))))
     agentWorker.addAgent(AgentDefine.model_validate_json(json.dumps(yaml.safe_load(defineAgentYaml))))
-    agentWorker.addChainTemplate("default-chain", AgentChainTemplate.model_validate_json(yaml.safe_load(defineChainTemplateYaml)))
-    agentWorker.addLlm("qwen-test", LlmSetting.model_validate_json(yaml.safe_load(definellmYaml)))
+    # chainTemplate = yaml.safe_load(defineChainTemplateYaml)
+    # h = open('onNext.py', 'r')
+    # chainTemplate["onNext"] = h.read()
+    # h.close()
+    # print(chainTemplate)
+    agentWorker.addChainTemplate("default-chain", AgentChainTemplate.model_validate_json(json.dumps(yaml.safe_load(defineChainTemplateYaml))))
+    agentWorker.addLlm("qwen-test", LlmSetting.model_validate_json(json.dumps(yaml.safe_load(definellmYaml))))
 
     runnableHub.registerWorker(agentWorker)
     runnableHub.registerWorker(toolWorker)

@@ -19,8 +19,8 @@ class AgentDefine(BaseModel):
     functions: List[AgentFunction]
     instruction: str
     
-    llm: Optional[LlmSetting]
+    llm: Optional[LlmSetting] = None
     llmCode: Optional[str]
 
-    chainTemplate: Optional[AgentChainTemplate]
+    chainTemplate: Optional[AgentChainTemplate] = None
     chainTemplateCode: Optional[str]

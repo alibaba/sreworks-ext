@@ -66,58 +66,65 @@ class Worker(RunnableWorker):
 
     async def onNext(self, context: RunnableContext[AgentRequest, AgentResponse]) -> RunnableContext:
         agentDefine = self.readAgent(context.request.agentCode, context.request.agentVersion)
-        
       
-        # chain   
-        if context.data.get("sendChainRequest") is None:
-            
-            if agentDefine.chainTemplate is not None:
-                chainTemplate = {
-                    "systemPrompt": agentDefine.chainTemplate.systemPrompt,
-                    "userPrompt": agentDefine.chainTemplate.userPrompt,
-                    "onNext": agentDefine.chainTemplate.onNext
+        # chain
+        if agentDefine.chainTemplate is not None or agentDefine.chainTemplateCode is not None:
+            if context.data.get("sendChainRequest") is None:
+                if agentDefine.chainTemplate is not None:
+                    chainTemplate = {
+                        "systemPrompt": agentDefine.chainTemplate.systemPrompt,
+                        "userPrompt": agentDefine.chainTemplate.userPrompt,
+                        "onNext": agentDefine.chainTemplate.onNext
+                    }
+                elif agentDefine.chainTemplateCode is not None:
+                    chainTemplateByCode = self.readChainTemplate(agentDefine.chainTemplateCode)
+                    chainTemplate = {
+                        "systemPrompt": chainTemplateByCode.systemPrompt,
+                        "userPrompt": chainTemplateByCode.userPrompt,
+                        "onNext": chainTemplateByCode.onNext
+                    }
+
+                if agentDefine.llm is not None:
+                    llm = agentDefine.llm
+                elif agentDefine.llmCode is not None:    
+                    llm = self.readLllm(agentDefine.llmCode)
+                else:
+                    raise Exception("No llm")
+
+                chainFunctions = []
+                toolCodeVersions = [f"{f.name}:{f.version}" for f in agentDefine.functions if f.type == AgentFunctionType.TOOL]
+                toolMap = {tool.toolCode: tool for tool in await self.toolWorker.readTools(toolCodeVersions)}
+                for f in agentDefine.functions:
+                    if f.type == AgentFunctionType.TOOL:
+                        chainFunctions.append({
+                            "type": "TOOL",
+                            "name": f.name,
+                            "version": f.version,
+                            "description": toolMap[f.name].description,
+                            "inputDefine": toolMap[f.name].inputSpec,
+                            "presetInputs": f.presetInputs,
+                        })
+
+                chainRequest = {
+                    "runnableCode": "CHAIN",
+                    "data": {
+                        "inputs": context.request.inputs,
+                    },
+                    "llm": llm,
+                    "functions": chainFunctions,
                 }
-            elif agentDefine.chainTemplateCode is not None:
-                chainTemplateByCode = self.readChainTemplate(agentDefine.chainTemplateCode)
-                chainTemplate = {
-                    "systemPrompt": chainTemplateByCode.systemPrompt,
-                    "userPrompt": chainTemplateByCode.userPrompt,
-                    "onNext": chainTemplateByCode.onNext
-                }
+                chainRequest.update(chainTemplate)
+                context.promise.resolve["chain"] = chainRequest
+                context.data["sendChainRequest"] = datetime.now()
+                return context
             else:
-                raise Exception("No chainTemplate")
-
-            if agentDefine.llm is not None:
-                llm = agentDefine.llm
-            elif agentDefine.llmCode is not None:    
-                llm = self.readLllm(agentDefine.llmCode)
-            else:
-                raise Exception("No llm")
-
-            chainFunctions = []
-            toolCodeVersions = [f"{f.name}:{f.version}" for f in agentDefine.functions if f.type == AgentFunctionType.TOOL]
-            toolMap = {tool.toolCode: tool for tool in await self.toolWorker.readTools(toolCodeVersions)}
-            for f in agentDefine.functions:
-                if f.type == AgentFunctionType.TOOL:
-                    chainFunctions.append({
-                        "type": "TOOL",
-                        "name": f.name,
-                        "version": f.version,
-                        "description": toolMap[f.name].description,
-                        "inputDefine": toolMap[f.name].inputSpec,
-                        "presetInputs": f.presetInputs,
-                    })
-
-            chainRequest = {
-                "runnableCode": "CHAIN",
-                "data": context.request.inputs,
-                "llm": llm,
-                "chainFunctions": chainFunctions,
-            }
-            chainRequest.update(chainTemplate)
-            context.promise.resolve["chain"] = chainRequest
-            context.data["sendChainRequest"] = datetime.now()
-            return context
+                if context.promise.result["chain"] is None:
+                    raise ValueError("chain response is missing")
+                if agentDefine.postrun is None:
+                    context.status = RunnableStatus.SUCCESS
+                    context.response = AgentResponse(success=True, outputs=context.promise.result["chain"]["finalAnswer"])
+                    return context
+                
 
         return context
 
