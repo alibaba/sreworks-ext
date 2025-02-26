@@ -144,6 +144,8 @@ class RunnableWorkerDispatch():
 
             # 执行器读取完成后将此结果置空
             context.promise.result = {}
+            print(context)
+            self.store.saveFile(contextFile, context.model_dump_json())
 
             if context.status in [RunnableStatus.ERROR, RunnableStatus.SUCCESS]:
                 context.endTime = datetime.now()
@@ -155,5 +157,3 @@ class RunnableWorkerDispatch():
                     print(f"get todo {name} {req}")
                     await self.hub.executeStart(self.hub.requests[req['runnableCode']](**req), context, name)
 
-            print(context)
-            self.store.saveFile(contextFile, context.model_dump_json())
