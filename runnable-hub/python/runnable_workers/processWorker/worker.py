@@ -51,9 +51,18 @@ class Worker(RunnableWorker):
         else:
             return target
 
-    def make_worker_request(self, step, stepOutputs, inputs) -> Dict:
+    def getAllJobsOutputs(self, runtime) -> Dict:
+        jobsOutputs = {}
+        for jobId, job in runtime.items():
+            if job["jobStatus"] == "SUCCESS":
+                jobsOutputs[jobId] = {
+                    "outputs": job["outputs"]
+                }
+        return jobsOutputs
 
-        renderData = {"steps": stepOutputs, "inputs": inputs}
+    def make_worker_request(self, step, stepOutputs, inputs, settings, jobsOutputs) -> Dict:
+
+        renderData = {"steps": stepOutputs, "inputs": inputs, "settings": settings, "jobs": jobsOutputs}
         outputs = None
         if step.get("shell") is not None: 
             outputs = OutputRender('$SHELL_RUN_PATH/{outputFileName}')
@@ -141,7 +150,9 @@ class Worker(RunnableWorker):
                     checkJob["jobStatus"] = "ERROR"
                     checkJob["endTime"] = datetime.now()
             elif len(job["steps"]) > 0:
-                step = self.make_worker_request(job["steps"].pop(0), job["stepOutputs"], context.request.inputs)
+                self.getAllJobsOutputs(context.data["runtime"])
+                step = self.make_worker_request(job["steps"].pop(0), job["stepOutputs"], context.request.inputs, 
+                                                context.request.settings, self.getAllJobsOutputs(context.data["runtime"]))
                 job["currentStepId"] = step["id"]
                 context.promise.resolve[jobId] = step["request"]
             else:

@@ -8,3 +8,4 @@ class ProcessRequest(RunnableRequest):
     jobs: Dict[str, ProcessJob]
     outputs: Optional[Dict|str] = None
     inputs: Dict = {}
+    settings: Dict = {}
