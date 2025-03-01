@@ -8,9 +8,8 @@ class ProcessStep(BaseModel):
     runnableCode: Optional[str] = None
     request: Optional[Dict] = None
 
-    # Common node customization fields
     shell: Optional[str] = None
-    api: Optional[Dict|str] = None
+    api: Optional[Dict] = None
     jinja: Optional[Dict] = None
     python: Optional[str] = None
     tool: Optional[Dict] = None

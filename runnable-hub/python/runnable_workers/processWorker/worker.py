@@ -53,41 +53,44 @@ class Worker(RunnableWorker):
 
     def make_worker_request(self, step, stepOutputs, inputs) -> Dict:
 
-        # stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs}, step)
-        if step.get("shell") is not None:
+        renderData = {"steps": stepOutputs, "inputs": inputs}
+        outputs = None
+        if step.get("shell") is not None: 
             outputs = OutputRender('$SHELL_RUN_PATH/{outputFileName}')
-            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"] = {
-                "runnableCode": "SHELL",
-                "run": stepRender["shell"],
-                "outputs": outputs.outputValueMap,
-            }
-        elif step.get("api") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"] = stepRender["api"]
-            stepRender["request"]["runnableCode"] = "API"
-        elif step.get("jinja") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"] = stepRender["jinja"]
-            stepRender["request"]["runnableCode"] = "JINJA"
         elif step.get("python") is not None:
             outputs = OutputRender("os.environ.get('PYTHON_RUN_PATH')+'/{outputFileName}'")
-            stepRender:Any = self.complexRender({"outputs": outputs, "steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"] = {
-                "runnableCode": "PYTHON",
-                "run": stepRender["python"],
-                "outputs": outputs.outputValueMap,
-            }
-            stepRender["request"]["runnableCode"] = "PYTHON"
+        if outputs is not None:
+            renderData["outputs"] = outputs
+        
+        stepRender:Any = self.complexRender(renderData, step)
+
+        if step.get("runnableCode") is not None:
+            runnableCode = step["runnableCode"]
+        elif step.get("shell") is not None:
+            runnableCode = "SHELL"
+        elif step.get("api") is not None:
+            runnableCode = "API"
+        elif step.get("jinja") is not None:
+            runnableCode = "JINJA"
+        elif step.get("python") is not None:
+            runnableCode = "PYTHON"
         elif step.get("tool") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"] = stepRender["tool"]
-            stepRender["request"]["runnableCode"] = "TOOL"     
-        elif step.get("runnableCode") is not None:
-            stepRender:Any = self.complexRender({"steps": stepOutputs, "inputs": inputs}, step)
-            stepRender["request"]["runnableCode"] = stepRender["runnableCode"]
+            runnableCode = "TOOL"
         else:
             raise RuntimeError(f"step {step} has no runnableCode")
+        
+        if runnableCode in ["SHELL", "PYTHON"]:
+            stepRender["request"] = {
+                "runnableCode": runnableCode,
+                "run": stepRender[runnableCode.lower()],
+            }
+        else:
+            stepRender["request"] = stepRender[runnableCode.lower()]
+
+        if outputs is not None:
+            stepRender["request"]["outputs"] = outputs.outputValueMap
+
+        stepRender["request"]["runnableCode"] = runnableCode
         return stepRender
 
 
