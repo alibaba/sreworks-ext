@@ -85,6 +85,8 @@ class Worker(RunnableWorker):
             runnableCode = "PYTHON"
         elif step.get("tool") is not None:
             runnableCode = "TOOL"
+        elif step.get("agent") is not None:
+            runnableCode = "AGENT"
         else:
             raise RuntimeError(f"step {step} has no runnableCode")
         
