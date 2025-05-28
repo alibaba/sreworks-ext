@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="gitops",  # 你的包名，例如 "my_awesome_library"
+    name="agitops",  # 你的包名，例如 "my_awesome_library"
     version="0.0.1",  # 包的版本号，遵循语义化版本规范 (例如 0.1.0, 1.0.0, 2.3.5)
     author="twwyzh",  # 你的名字
     author_email="twwyzh@gmail.com",  # 你的邮箱地址
@@ -10,8 +10,7 @@ setup(
     long_description="gitops for ai brain",  # 包的详细描述，通常来自 README 文件
     long_description_content_type="text/markdown",  # 长描述的格式，这里是 Markdown
     url="https://github.com/alibaba/sreworks-ext/tree/master/agitops",  # 项目的 URL，例如 GitHub 仓库地址
-    packages=find_packages(include=["agent", "tool", "agent.*", "tool.*"]),  # 自动发现 'src' 目录下的所有包
-                                         # 如果你的代码直接在根目录，可以使用 find_packages()
+    packages=find_packages(include=["agent", "tool", "util", "agent.*", "tool.*", "util.*"]),
     package_dir={"": "."},  # 告诉 setuptools 包在 'src' 目录下
                              # 如果你的代码直接在根目录，可以省略这一行
     # 如果你的包包含非 Python 文件 (如数据文件、模板文件)，使用 include_package_data 和 package_data
