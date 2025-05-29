@@ -3,7 +3,7 @@
 import argparse as _argparse
 import json
 import sys
-from agitops.utils import run_command
+from ..util import run_command
 import os
 import tempfile
 

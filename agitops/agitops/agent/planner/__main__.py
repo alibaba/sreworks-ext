@@ -5,8 +5,8 @@ import sys
 import yaml
 import json
 import subprocess
-from agitops.utils import run_command
-from agitops.tool import ToolHandler
+from ...util import run_command
+from ...tool import ToolHandler
 from openai import OpenAI
 from datetime import datetime
 from zoneinfo import ZoneInfo

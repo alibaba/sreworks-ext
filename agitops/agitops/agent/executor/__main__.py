@@ -5,10 +5,9 @@ import sys
 import tempfile
 import yaml
 import json
-from agitops.utils import run_command
-from agitops.tool import ToolHandler
 from openai import OpenAI
-
+from ...util import run_command
+from ...tool import ToolHandler
 
 # sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(alpine)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
 
