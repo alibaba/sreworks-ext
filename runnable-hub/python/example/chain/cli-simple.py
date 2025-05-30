@@ -9,17 +9,17 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.chainWorker.worker import Worker as ChainWorker
-from workers.toolWorker.worker import Worker as ToolWorker
-from workers.pythonWorker.worker import Worker as PythonWorker
-from workers.llmWorker.worker import Worker as LlmWorker
-from workers.processWorker.worker import Worker as ProcessWorker
-from workers.jinjaWorker.worker import Worker as JinjaWorker
-from workers.apiWorker.worker import Worker as ApiWorker
-from workers.chainWorker.request.chainRequest import ChainRequest
-from workers.toolWorker.request.toolDefine import ToolDefine
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_workers.chainWorker.worker import Worker as ChainWorker
+from runnable_workers.toolWorker.worker import Worker as ToolWorker
+from runnable_workers.pythonWorker.worker import Worker as PythonWorker
+from runnable_workers.llmWorker.worker import Worker as LlmWorker
+from runnable_workers.processWorker.worker import Worker as ProcessWorker
+from runnable_workers.jinjaWorker.worker import Worker as JinjaWorker
+from runnable_workers.apiWorker.worker import Worker as ApiWorker
+from runnable_workers.chainWorker.request.chainRequest import ChainRequest
+from runnable_workers.toolWorker.request.toolDefine import ToolDefine
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 QWEN_SK = os.getenv("QWEN_SK")
 
@@ -51,24 +51,31 @@ toolDefineYaml = """
 
 
 requestYaml = f"""
-    llmEndpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    llmModel: qwen-plus
-    llmSecretKey: {QWEN_SK}
+    llm:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
 """
 
+
 requestYaml += """
+    data:
+      inputs:
+        prompt: What is the IP address of baidu.com?
     functions: 
     - type: TOOL
       name: get_domain_ip
       version: v1
+      description: |
+        A tool that can fetch the IP address of a domain.
       inputDefine:
       - name: domain
         type: STRING
         required: true
     systemPrompt: |
       Respond to the human as helpfully and accurately as possible. You have access to the following tools:
-
-      get_domain_ip: get_domain_ip(domain: str) -> str - A tool that can fetch the IP address of a domain.
+ 
+      {{ tool_info }}
 
       Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
 
@@ -105,7 +112,7 @@ requestYaml += """
     userPrompt: |
       Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
       Thought:
-      Human: What is the IP address of baidu.com?
+      Human: {{ inputs.prompt }}
     
     onNext: |
       import re
