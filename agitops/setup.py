@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="agitops",  # 你的包名，例如 "my_awesome_library"
-    version="0.0.2",  # 包的版本号，遵循语义化版本规范 (例如 0.1.0, 1.0.0, 2.3.5)
+    version="0.0.3",  # 包的版本号，遵循语义化版本规范 (例如 0.1.0, 1.0.0, 2.3.5)
     author="twwyzh",  # 你的名字
     author_email="twwyzh@gmail.com",  # 你的邮箱地址
     description="gitops for ai brain",  # 包的简短描述
