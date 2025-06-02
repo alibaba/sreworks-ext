@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
-//#include <sys/sdt.h>
-#include "sdt.h"
+#include <sys/sdt.h>
+//#include "sdt.h"
 
 unsigned long long int func_uprobe1(unsigned long long int x){
     return x + 1;

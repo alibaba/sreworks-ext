@@ -9,19 +9,20 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(current_dir)))
 
-from workers.llmWorker.worker import Worker as LlmWorker
-from workers.llmWorker.request.llmRequest import LlmRequest
-from runnable import RunnableHub
-from runnable.store import RunnableLocalFileStore
+from runnable_workers.llmWorker.worker import Worker as LlmWorker
+from runnable_workers.llmWorker.request.llmRequest import LlmRequest
+from runnable_hub import RunnableHub
+from runnable_hub.store import RunnableLocalFileStore
 
 QWEN_SK = os.getenv("QWEN_SK")
 
 requestYaml = f"""
-    secretKey: {QWEN_SK}
+    setting:
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      model: qwen-plus
+      secretKey: {QWEN_SK}
 """
 requestYaml += """
-    endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    model: qwen-plus
     systemPrompt: You are a helpful assistant.
     userPrompt: 能否再精简一些?
     history:
