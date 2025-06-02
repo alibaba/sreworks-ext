@@ -87,7 +87,7 @@ class ExecutorAgent():
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
             f.write(f"[{self.conf['task_name']}] " + message)
 
-        commands = [git_conf_commands, "commit", "-F", f.name]
+        commands = git_conf_commands +["commit", "-F", f.name]
 
         (ret, stdout, stderr) = run_command(commands, cwd=self.conf["work_root_path"])
         if ret != 0:
