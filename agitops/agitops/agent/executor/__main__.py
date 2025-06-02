@@ -75,21 +75,20 @@ class ExecutorAgent():
         return terminalOutput
 
     def git_commit(self, message):
+        git_conf_commands = ["git",
+                    '-c', f"user.email={self.conf["git_user_email"]}",
+                    '-c', f"user.name={self.conf["git_user_name"]}",
+                    '-c', f"safe.directory={self.conf['work_root_path']}"]
 
-        (ret, stdout, stderr) = run_command(["git", "add", "."], cwd=self.conf["work_root_path"])
+        (ret, stdout, stderr) = run_command(git_conf_commands + ["add", "."], cwd=self.conf["work_root_path"])
         if ret != 0:
             print(f"git add failed: stdout:{stdout} stderr:{stderr}", flush=True)
 
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
             f.write(f"[{self.conf['task_name']}] " + message)
 
-        commands = ["git",
-                    '-c', f"user.email={self.conf["git_user_email"]}",
-                    '-c', f"user.name={self.conf["git_user_name"]}",
-                    '-c', f"safe.directory={self.conf['work_root_path']}",
-                    "commit", "-F", f.name]
+        commands = [git_conf_commands, "commit", "-F", f.name]
 
-        print(f"git commit commands: {commands}")
         (ret, stdout, stderr) = run_command(commands, cwd=self.conf["work_root_path"])
         if ret != 0:
             print(f"git commit failed: stdout:{stdout} stderr:{stderr}", flush=True)
