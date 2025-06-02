@@ -87,7 +87,8 @@ class ExecutorAgent():
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
             f.write(f"[{self.conf['task_name']}] " + message)
 
-        commands = git_conf_commands +["commit", "-F", f.name]
+        commands = git_conf_commands + ["commit", "-F", f.name]
+        print(commands)
 
         (ret, stdout, stderr) = run_command(commands, cwd=self.conf["work_root_path"])
         if ret != 0:
@@ -158,6 +159,9 @@ if __name__ == "__main__":
     next_loop = True
     count = 0
     while next_loop:
+        if count > 30:
+            print("max loop 30")
+            sys.exit(1)
         count += 1
         print(f"\nthought loop: {count}", flush=True)
         next_loop = agent.run()
