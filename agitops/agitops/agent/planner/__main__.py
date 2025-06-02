@@ -151,7 +151,7 @@ def execute_agent(work_root_path, llm_model, llm_client, preview_plan_markdown):
     h.close()
 
     h = open(preview_plan_markdown, 'w')
-    h.write(yaml.dump(plan))
+    h.write(yaml.dump(plan, allow_unicode=True, width=sys.maxsize, default_flow_style=False))
     h.close()
 
     print(json.dumps(plan, indent=4, ensure_ascii=False), flush=True)
