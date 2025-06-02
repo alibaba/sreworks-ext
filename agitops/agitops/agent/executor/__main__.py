@@ -40,11 +40,14 @@ class ExecutorAgent():
                 print(f"not found {conf_key} in {conf_path}")
                 sys.exit(1)
 
-        self.workspace_path = self.conf["work_root_path"] + "/workspace"
+        self.workspace_path = os.path.join(self.conf["work_root_path"], "workspace")
 
         if os.path.isfile(self.workspace_path):
             os.remove(self.workspace_path)
             os.makedirs(self.workspace_path, exist_ok=True)
+            # 存放一个文件，避免第一轮没有文件
+            with open(os.path.join(self.workspace_path, ".gitignore"), 'w') as f:
+                pass 
 
         self.toolHandler = ToolHandler({"bash": "bash.py"})
 
