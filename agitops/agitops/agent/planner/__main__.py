@@ -107,7 +107,7 @@ def set_task_result(plan, task_id, result):
     return False
 
 
-def execute_agent(work_root_path, llm_model, llm_client):
+def execute_agent(work_root_path, llm_model, llm_client, preview_plan_markdown):
     chat_path = work_root_path + "/chat"
     task_path = work_root_path + "/task"
     doing_task_flag_file = task_path + "/doing-task"
@@ -148,6 +148,10 @@ def execute_agent(work_root_path, llm_model, llm_client):
 
     h = open(assistant_message["path"] + "/plan.json", 'w')
     h.write(json.dumps(plan, indent=4, ensure_ascii=False))
+    h.close()
+
+    h = open(preview_plan_markdown, 'w')
+    h.write(yaml.dump(plan))
     h.close()
 
     print(json.dumps(plan, indent=4, ensure_ascii=False), flush=True)
@@ -253,7 +257,7 @@ if __name__ == "__main__":
         print(f"not found {conf_path}")
         sys.exit(1)
 
-    conf_keys = ["llm_model", "llm_api_url", "llm_api_key", "work_root_path"]
+    conf_keys = ["llm_model", "llm_api_url", "llm_api_key", "work_root_path","preview_plan_markdown"]
     for conf_key in conf_keys:
         if conf_key not in conf:
             print(f"not found {conf_key} in {conf_path}")
@@ -262,4 +266,4 @@ if __name__ == "__main__":
     execute_agent(conf["work_root_path"], conf["llm_model"], llm_client=OpenAI(
         api_key=conf["llm_api_key"],
         base_url=conf["llm_api_url"],
-    ))
+    ), preview_plan_markdown=conf["preview_plan_markdown"])
