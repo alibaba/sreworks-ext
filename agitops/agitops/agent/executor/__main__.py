@@ -86,6 +86,7 @@ class ExecutorAgent():
         (ret, stdout, stderr) = run_command(["git",
                                              '-c', f"user.email={self.conf["git_user_email"]}",
                                              '-c', f"user.name={self.conf["git_user_name"]}",
+                                             '-c', f"safe.directory={self.conf['work_root_path']}",
                                              "commit", "-F", f.name], cwd=self.conf["work_root_path"])
         if ret != 0:
             print(f"git commit failed: stdout:{stdout} stderr:{stderr}", flush=True)
