@@ -151,7 +151,7 @@ def execute_agent(work_root_path, llm_model, llm_client, preview_plan_markdown):
     h.close()
 
     h = open(preview_plan_markdown, 'w')
-    h.write(yaml.dump(plan, allow_unicode=True, width=sys.maxsize, default_flow_style=False))
+    h.write("```\n" + json.dumps(plan, indent=4, ensure_ascii=False) + "```\n")
     h.close()
 
     print(json.dumps(plan, indent=4, ensure_ascii=False), flush=True)
@@ -159,9 +159,15 @@ def execute_agent(work_root_path, llm_model, llm_client, preview_plan_markdown):
     todo_task = find_todo_task(plan)
     if todo_task is None:
         finalAnswer = call_llm(llm_client, llm_model, finalPrompt, user_query(user_message))
+        
         h = open(assistant_message["path"] + "/message.md", 'w')
         h.write(finalAnswer)
         h.close()
+
+        h = open(preview_plan_markdown, 'w')
+        h.write(finalAnswer)
+        h.close()
+
         return
 
     todo_task_path = task_path + "/" + todo_task["id"]
