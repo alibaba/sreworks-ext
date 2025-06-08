@@ -205,7 +205,7 @@ class PlanAgent():
             print(f"git add failed: stdout:{stdout} stderr:{stderr}", flush=True)
 
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
-            f.write(f"[{self.conf['task_name']}] " + message)
+            f.write(message)
 
         commands = git_conf_commands + ["commit", "-F", f.name]
         print(commands)
