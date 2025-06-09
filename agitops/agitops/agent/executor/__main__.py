@@ -97,6 +97,16 @@ class ExecutorAgent():
         if ret != 0:
             print(f"git commit failed: stdout:{stdout} stderr:{stderr}", flush=True)
 
+    def recode_event(self, content):
+        self.event_path = os.path.join(self.conf["work_root_path"], "event")
+        os.makedirs(self.event_path, exist_ok=True)
+
+        print("recode_event")
+        print(content)
+        h = open(self.event_path + "/exec.md", 'w')
+        h.write(content)
+        h.close()
+
     def run(self):
 
         context_file = os.path.join(self.conf["task_path"], "context.json")
@@ -146,6 +156,7 @@ class ExecutorAgent():
             h = open(os.path.join(self.conf["task_path"], "output.md"), "w")
             h.write(lastMsgContent)
             h.close()
+            self.recode_event(lastMsgContent)
 
         h = open(context_file, 'w')
         h.write(json.dumps(messages, indent=4, ensure_ascii=False))

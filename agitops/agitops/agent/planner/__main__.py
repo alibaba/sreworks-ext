@@ -70,7 +70,7 @@ def plan_to_markdown(plan, indent=0):
             description = ""
         md += " " * indent + f"- {task['title']} {description}\n"
         if task.get("children") is not None and len(task["children"]) > 0:
-            md += plan_to_markdown(task["children"], indent+1)
+            md += plan_to_markdown(task["children"], indent+2)
     return md
 
 
