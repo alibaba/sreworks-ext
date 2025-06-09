@@ -153,10 +153,13 @@ class ExecutorAgent():
                 messages.append(message)
 
         if waitFunction is False:
+            with open(os.path.join(self.conf["task_path"], "title.md"), "r") as h:
+                taskTitle = h.read()
+
             h = open(os.path.join(self.conf["task_path"], "output.md"), "w")
             h.write(lastMsgContent)
             h.close()
-            self.recode_event(lastMsgContent)
+            self.recode_event("# " + taskTitle + "\n" +lastMsgContent)
 
         h = open(context_file, 'w')
         h.write(json.dumps(messages, indent=4, ensure_ascii=False))

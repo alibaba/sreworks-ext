@@ -194,15 +194,14 @@ class PlanAgent():
             "path": directory_path,
         }
 
-    def recode_event(self, plan):
+    def recode_event(self, content):
         self.event_path = os.path.join(self.conf["work_root_path"], "event")
         os.makedirs(self.event_path, exist_ok=True)
 
         print("recode_event")
-        md = plan_to_markdown(plan)
-        print(md)
+        print(content)
         h = open(self.event_path + "/plan.md", 'w')
-        h.write(md)
+        h.write(content)
         h.close()
 
 
@@ -272,7 +271,7 @@ class PlanAgent():
             print(plan_yaml, flush=True)
             plan = parse_yaml(plan_yaml)
             plan = set_plan_id(plan)
-            self.recode_event(plan)
+            self.recode_event("# 计划\n" + plan_to_markdown(plan))
 
         h = open(assistant_message["path"] + "/plan.json", 'w')
         h.write(json.dumps(plan, indent=4, ensure_ascii=False))
@@ -297,6 +296,9 @@ class PlanAgent():
             h.write(finalAnswer)
             h.close()
 
+            self.recode_event("# 结论\n" + finalAnswer)
+
+
         else:
 
             todo_task_path = self.task_path + "/" + todo_task["id"]
@@ -308,6 +310,10 @@ class PlanAgent():
             task_input = self.call_llm(self.taskPrompt, f"<task>{todo_task}</task>")
             h = open(todo_task_path + "/input.md", 'w')
             h.write(task_input)
+            h.close()
+
+            h = open(todo_task_path + "/title.md", 'w')
+            h.write(todo_task["title"])
             h.close()
 
             h = open(todo_task_path + "/user_message.md", 'w')
