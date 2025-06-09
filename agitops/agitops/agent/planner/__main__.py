@@ -64,7 +64,11 @@ def set_task_result(plan, task_id, result):
 def plan_to_markdown(plan, indent=0):
     md = ""
     for task in plan:
-        md += " " * indent + f"- {task['title']} `{' '.join(task['description'].split())}`\n"
+        if "description" in task:
+            description = f"`{' '.join(task['description'].split())}`"
+        else:
+            description = ""
+        md += " " * indent + f"- {task['title']} {description}\n"
         if task.get("children") is not None and len(task["children"]) > 0:
             md += plan_to_markdown(task["children"], indent+1)
     return md
