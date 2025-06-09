@@ -194,8 +194,11 @@ class PlanAgent():
         self.event_path = os.path.join(self.conf["work_root_path"], "event")
         os.makedirs(self.event_path, exist_ok=True)
 
+        print("recode_event")
+        md = plan_to_markdown(plan)
+        print(md)
         h = open(self.event_path + "/plan.md", 'w')
-        h.write(plan_to_markdown(plan))
+        h.write(md)
         h.close()
 
 
