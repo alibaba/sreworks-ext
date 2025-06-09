@@ -61,6 +61,14 @@ def set_task_result(plan, task_id, result):
             return set_task_result(task["children"], task_id, result)
     return False
 
+def plan_to_markdown(plan, indent=0):
+    md = ""
+    for task in plan:
+        md += " " * indent + f"- {task['title']} `{task['description']}`\n"
+        if task.get("children") is not None and len(task["children"]) > 0:
+            md += plan_to_markdown(task["children"], indent+1)
+    return md
+
 
 class PlanAgent():
     planPrompt = """
@@ -182,6 +190,14 @@ class PlanAgent():
             "path": directory_path,
         }
 
+    def recode_event(self, plan):
+        self.event_path = os.path.join(self.conf["work_root_path"], "event")
+        os.makedirs(self.event_path, exist_ok=True)
+
+        h = open(self.event_path + "/plan.md", 'w')
+        h.write(plan_to_markdown(plan))
+        h.close()
+
 
     def checkout_latest_message(self, chats):
         if len(chats) == 0:
@@ -249,6 +265,7 @@ class PlanAgent():
             print(plan_yaml, flush=True)
             plan = parse_yaml(plan_yaml)
             plan = set_plan_id(plan)
+            self.recode_event(plan)
 
         h = open(assistant_message["path"] + "/plan.json", 'w')
         h.write(json.dumps(plan, indent=4, ensure_ascii=False))
