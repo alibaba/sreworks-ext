@@ -35,6 +35,7 @@ setup(
     install_requires=[  # 项目依赖的包，会在安装你的包时自动安装
         "openai",
         "pyyaml",
+        "browser-use",
     ],
     extras_require={  # 可选依赖，用户可以根据需要安装
         # "dev": ["pytest>=3.7", "flake8", "black"], # 示例：开发环境依赖
