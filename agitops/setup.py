@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="agitops",  # 你的包名，例如 "my_awesome_library"
-    version="0.0.23",  # 包的版本号，遵循语义化版本规范 (例如 0.1.0, 1.0.0, 2.3.5)
+    version="0.0.26",  # 包的版本号，遵循语义化版本规范 (例如 0.1.0, 1.0.0, 2.3.5)
     author="twwyzh",  # 你的名字
     author_email="twwyzh@gmail.com",  # 你的邮箱地址
     description="gitops for ai brain",  # 包的简短描述
@@ -35,6 +35,7 @@ setup(
     install_requires=[  # 项目依赖的包，会在安装你的包时自动安装
         "openai",
         "pyyaml",
+        "browser-use",
     ],
     extras_require={  # 可选依赖，用户可以根据需要安装
         # "dev": ["pytest>=3.7", "flake8", "black"], # 示例：开发环境依赖

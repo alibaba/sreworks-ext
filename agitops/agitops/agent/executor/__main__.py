@@ -12,7 +12,7 @@ from ...tool import ToolHandler
 # sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(alpine)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
 
 class ExecutorAgent():
-    sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(alpine)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
+    sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(bookworm)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
 
     def __init__(self, conf_path):
         # /gitops.yaml
