@@ -49,7 +49,7 @@ class ExecutorAgent():
             with open(os.path.join(self.workspace_path, ".gitignore"), 'w') as f:
                 pass 
 
-        self.toolHandler = ToolHandler({"bash": "bash.py", "browser": "browser.py"},)
+        self.toolHandler = ToolHandler({"bash": "bash.py"})
 
         self.llm_client = OpenAI(
             api_key=self.conf["llm_api_key"],
