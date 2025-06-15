@@ -8,6 +8,8 @@ import asyncio
 from contextlib import redirect_stdout
 import io
 
+os.environ["ANONYMIZED_TELEMETRY"] = "false"
+
 from agitops.tool import argparse
 from browser_use import Agent, BrowserSession
 from langchain_openai import ChatOpenAI
