@@ -15,7 +15,7 @@ from browser_use import Controller, ActionResult, Agent, BrowserSession
 from langchain_openai import ChatOpenAI
 
 
-# controller = Controller()
+controller = Controller()
 
 class ExplorerAgent():
     sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(bookworm)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
@@ -56,23 +56,7 @@ class ExplorerAgent():
                 pass 
 
         self.toolHandler = ToolHandler({"bash": "bash.py"})
-        self.controller = Controller()
-        self.controller.register('bash', partial(self.exec_shell))
 
-    # @controller.action('bash')
-    def exec_shell(self, exec_command: str) -> ActionResult:
-        process = subprocess.Popen(
-            exec_command,
-            shell=True,
-            cwd=self.workspace_path,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True
-        )
-        stdout, stderr = process.communicate()
-        return_code = process.returncode
-        result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
-        return ActionResult(extracted_content=result)
 
     def init_task(self):
         terminalOutput = ""
@@ -186,4 +170,20 @@ class ExplorerAgent():
 if __name__ == "__main__":
 
     agent = ExplorerAgent("/etc/gitops.yaml")
+
+    @controller.action('bash')
+    def exec_shell(exec_command: str) -> ActionResult:
+        process = subprocess.Popen(
+            exec_command,
+            shell=True,
+            cwd=agent.workspace_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        )
+        stdout, stderr = process.communicate()
+        return_code = process.returncode
+        result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
+        return ActionResult(extracted_content=result)
+
     asyncio.run(agent.run())
