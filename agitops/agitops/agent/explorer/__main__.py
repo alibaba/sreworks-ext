@@ -11,6 +11,8 @@ from openai import OpenAI
 from ...util import run_command
 from ...tool import ToolHandler
 from browser_use import Controller, ActionResult, Agent, BrowserSession
+from langchain_openai import ChatOpenAI
+
 
 controller = Controller()
 
