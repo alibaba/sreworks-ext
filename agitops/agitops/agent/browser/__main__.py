@@ -59,9 +59,9 @@ class ExplorerAgent():
 
 
     @controller.action('bash')
-    def exec_shell(self, exec: str) -> ActionResult:
+    def exec_shell(self, exec_command: str) -> ActionResult:
         process = subprocess.Popen(
-            command,
+            exec_command,
             shell=True,
             cwd=self.workspace_path,
             stdout=subprocess.PIPE,
