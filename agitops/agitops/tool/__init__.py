@@ -141,7 +141,7 @@ class ToolHandler():
         tool_name, function_name = name.split("#", 1)
         tool_object = self.tools[tool_name]
 
-        print(tool_object)
+        print(tool_object, flush=True)
 
         match_functions = [tool for tool in tool_object["schema"] if tool["function"]["name"] == name]
         if len(match_functions) == 0:

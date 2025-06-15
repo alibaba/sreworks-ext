@@ -67,7 +67,7 @@ async def explore(query, log_file, llm_api_key, llm_api_url, llm_model):
                 args=['--no-sandbox'],
             ),
         )
-        result = await agent.run()
+        result = await agent.run(max_steps=10)
     
     output = {}
     output["final_result"] = result.final_result()
