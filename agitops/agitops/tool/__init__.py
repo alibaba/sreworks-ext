@@ -152,10 +152,11 @@ class ToolHandler():
         defaultParam = tool_object.get(name, {})
         renderDefaultJson = self.jinjaEnv.from_string(json.dumps(defaultParam)).render(**renderValues)
         defaultParam = json.loads(renderDefaultJson)
-        arguments.update(defaultParam)
 
         try:
             args = json.loads(arguments)
+            args.update(defaultParam)
+
         except Exception as e:
             result["content"] = f"parse arguments json failed"
             return result
