@@ -6,7 +6,7 @@ import sys
 from ..util import run_command
 import os
 import tempfile
-
+from jinja2 import Environment
 
 class ArgumentParserProxy:
     def __init__(self, *args, **kwargs):
@@ -59,8 +59,11 @@ class SubParsersActionProxy:
                     "description": param.help,
                     "type": "string"
                 }
+                if param.default is not None:
+                    params[param.dest]["default"] = param.default
                 if param.required:
                     requiredList.append(param.dest)
+                
 
             fn = {
                 "type": "function",
@@ -91,6 +94,7 @@ class ToolHandler():
     tools = {}
 
     def __init__(self, path_map):
+        self.jinjaEnv = Environment()
         self_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
         for tool_name, path in path_map.items():
             if "#" in tool_name:
@@ -102,11 +106,24 @@ class ToolHandler():
                 path = self_path + "/" + path
 
             schema = json.loads(stdout.strip())
+            defaultParams = {}
             for tool in schema:
                 tool["function"]["name"] = f"{tool_name}#{tool['function']['name']}"
+                defaultParams[tool["function"]["name"]] = {}
+                properties = {}
+                for key, param_info in tool["function"]["parameters"]["properties"]:
+                    if param_info.get("default") is not None:
+                        defaultParams[tool["function"]["name"]][key] = param_info["default"]
+                        if key in tool["function"]["parameters"]["required"]:
+                            tool["function"]["parameters"]["required"].remove(key)
+                    else:
+                        properties[key] = param_info
+                tool["function"]["parameters"]["properties"] = properties
+
             self.tools[tool_name] = {
                 "path": path,
-                "schema": schema
+                "schema": schema,
+                "defaultParams": defaultParams,
             }
 
     def get_schema(self):
@@ -115,7 +132,7 @@ class ToolHandler():
             tools += tool_info["schema"]
         return tools
 
-    def exec_tool(self, name, arguments, tool_call_id, cwd, envs={}):
+    def exec_tool(self, name, arguments, tool_call_id, cwd, envs={}, renderValues={}):
         # {"role": "tool", "content": "工具的输出", "tool_call_id": completion.choices[0].message.tool_calls[0].id}
         result = {
             "role": "tool",
@@ -123,11 +140,19 @@ class ToolHandler():
         }
         tool_name, function_name = name.split("#", 1)
         tool_object = self.tools[tool_name]
+
         print(tool_object)
+
         match_functions = [tool for tool in tool_object["schema"] if tool["function"]["name"] == name]
         if len(match_functions) == 0:
             result["content"] = f"tool {name} not found"
             return result
+
+        renderValues["call"] = {"log_file": "/tmp/test"}
+        defaultParam = tool_object.get(name, {})
+        renderDefaultJson = self.jinjaEnv.from_string(json.dumps(defaultParam)).render(**renderValues)
+        defaultParam = json.loads(renderDefaultJson)
+        arguments.update(defaultParam)
 
         try:
             args = json.loads(arguments)
