@@ -15,7 +15,7 @@ from browser_use import Controller, ActionResult, Agent, BrowserSession
 from langchain_openai import ChatOpenAI
 
 
-controller = Controller()
+# controller = Controller()
 
 class ExplorerAgent():
     sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(bookworm)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
@@ -56,9 +56,10 @@ class ExplorerAgent():
                 pass 
 
         self.toolHandler = ToolHandler({"bash": "bash.py"})
+        self.controller = Controller()
+        self.controller.register('bash', partial(self.exec_shell))
 
-
-    @controller.action('bash')
+    # @controller.action('bash')
     def exec_shell(self, exec_command: str) -> ActionResult:
         process = subprocess.Popen(
             exec_command,
@@ -146,6 +147,8 @@ class ExplorerAgent():
         )
         result = await agent.run(max_steps=30)
 
+        print(f"result: {result}")
+
         output = {}
         output["final_result"] = result.final_result()
         output["history"] = []
@@ -162,6 +165,8 @@ class ExplorerAgent():
                 "url": h.state.url,
                 "result": result,
             })
+
+        print(json.dumps(output, indent=4, ensure_ascii=False))
 
         h = open(context_file, 'w')
         h.write(json.dumps(output, indent=4, ensure_ascii=False))
