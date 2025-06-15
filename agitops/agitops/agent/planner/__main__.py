@@ -79,7 +79,9 @@ class PlanAgent():
 你是一个任务管理专家，你不用直接执行任务，请合理地提出计划解决 <question>..</question> 中提到的问题。
 <questionFiles> .. </questionFiles>为用户上传的与问题相关的文件。
 整个计划任务请使用YAML数组编写，最顶层步骤最好不要超过6步。
-如果有子任务直接使用YAML嵌套，子任务使用children作为key，每个任务名使用title，任务描述使用description。
+如果有子任务直接使用YAML嵌套，子任务使用children作为key，建议简单任务不使用子任务。
+每个任务名使用title字段，任务描述使用description字段。
+每个任务的executor字段可以指定是browser或explorer。browser是在浏览器中完成任务，explorer是在Linux文件系统中完成任务，默认为explorer。
 每个任务的description需要是一个明确要解决的问题，而不是答案。
 """
 
@@ -194,11 +196,11 @@ class PlanAgent():
             "path": directory_path,
         }
 
-    def recode_event(self, content):
+    def record_event(self, content):
         self.event_path = os.path.join(self.conf["work_root_path"], "event")
         os.makedirs(self.event_path, exist_ok=True)
 
-        print("recode_event")
+        print("record_event")
         print(content)
         h = open(self.event_path + "/plan.md", 'w')
         h.write(content)
@@ -271,7 +273,7 @@ class PlanAgent():
             print(plan_yaml, flush=True)
             plan = parse_yaml(plan_yaml)
             plan = set_plan_id(plan)
-            self.recode_event("# 计划\n" + plan_to_markdown(plan))
+            self.record_event("# 计划\n" + plan_to_markdown(plan))
 
         h = open(assistant_message["path"] + "/plan.json", 'w')
         h.write(json.dumps(plan, indent=4, ensure_ascii=False))
@@ -296,7 +298,7 @@ class PlanAgent():
             h.write(finalAnswer)
             h.close()
 
-            self.recode_event("# 结论\n" + finalAnswer)
+            self.record_event("# 结论\n" + finalAnswer)
 
 
         else:
@@ -323,7 +325,7 @@ class PlanAgent():
             print(f"{todo_task['id']} start", flush=True)
             print(task_input, flush=True)
             h = open(doing_task_flag_file, 'w')
-            h.write(f"executor/{todo_task['id']}")
+            h.write(f"{todo_task.get("executor","explorer")}/{todo_task['id']}")
             h.close()
 
         self.git_commit("Plan task")

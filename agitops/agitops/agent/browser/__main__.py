@@ -5,13 +5,19 @@ import sys
 import tempfile
 import yaml
 import json
+import subprocess
+import asyncio
+
 from openai import OpenAI
 from ...util import run_command
 from ...tool import ToolHandler
+from browser_use import Controller, ActionResult, Agent, BrowserSession
+from langchain_openai import ChatOpenAI
 
-# sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(alpine)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
 
-class ExecutorAgent():
+controller = Controller()
+
+class ExplorerAgent():
     sys_prompt = "你来扮演一个任务专家，你是在一个linux系统(bookworm)中, 当前有planner已经对用户问题进行了任务拆分，请合理地使用工具解决 <task>..</task> 中提到的问题。"
 
     def __init__(self, conf_path):
@@ -49,12 +55,23 @@ class ExecutorAgent():
             with open(os.path.join(self.workspace_path, ".gitignore"), 'w') as f:
                 pass 
 
-        self.toolHandler = ToolHandler({"bash": "bash.py", "browser": "browser.py"},)
+        self.toolHandler = ToolHandler({"bash": "bash.py"})
 
-        self.llm_client = OpenAI(
-            api_key=self.conf["llm_api_key"],
-            base_url=self.conf["llm_api_url"],
+
+    @controller.action('bash')
+    def exec_shell(self, exec: str) -> ActionResult:
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            cwd=self.workspace_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
         )
+        stdout, stderr = process.communicate()
+        return_code = process.returncode
+        result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
+        return ActionResult(extracted_content=result)
 
     def init_task(self):
         terminalOutput = ""
@@ -97,89 +114,71 @@ class ExecutorAgent():
         if ret != 0:
             print(f"git commit failed: stdout:{stdout} stderr:{stderr}", flush=True)
 
-    def recode_event(self, content):
+    def record_event(self, content):
         self.event_path = os.path.join(self.conf["work_root_path"], "event")
         os.makedirs(self.event_path, exist_ok=True)
 
-        print("recode_event")
+        print("record_event")
         print(content)
         h = open(self.event_path + "/exec.md", 'w')
         h.write(content)
         h.close()
 
-    def run(self):
+    async def run(self):
 
         context_file = os.path.join(self.conf["task_path"], "context.json")
-        if os.path.exists(context_file):
-            h = open(context_file, 'r')
-            messages = json.loads(h.read())
-            h.close()
-        else:
-            messages = [
-                {"role": "system", "content": self.sys_prompt},
-                {"role": "user", "content": self.init_task()}]
 
-        completion = self.llm_client.chat.completions.create(
-            model=self.conf["llm_model"],
-            messages=messages,
-            tools=self.toolHandler.get_schema()
-        ).to_dict()
+        agent = Agent(
+            task=self.init_task(),
+            enable_memory=False,
+            llm=ChatOpenAI(
+              model=self.conf["llm_model"],
+              api_key=self.conf["llm_api_key"],
+              base_url=self.conf["llm_api_url"],
+            ),
+            browser_session=BrowserSession(
+                headless=True,
+                viewport={'width': 1440, 'height': 900},
+                args=['--no-sandbox'],
+            ),
+            override_system_message=self.sys_prompt,
+            controller=controller,
+        )
+        result = await agent.run(max_steps=30)
 
-        waitFunction = False
-        messageData = None
+        output = {}
+        output["final_result"] = result.final_result()
+        output["history"] = []
 
-        if completion.get("choices") is not None:
-            messageData = completion["choices"][0].get("message")
-
-        if messageData is None:
-            raise Exception("no message")
-
-        messages.append(messageData)
-        lastMsgContent = messageData.get("content")
-        print(lastMsgContent)
-        if messageData.get("tool_calls") is not None:
-            if lastMsgContent in [None, ""]:
-                lastMsgContent = "call tool"
-            for tool_call in messageData["tool_calls"]:
-                waitFunction = True
-                print(f"exec tool {tool_call}")
-                message = self.toolHandler.exec_tool(
-                    name=tool_call.get("function", {}).get("name"),
-                    arguments=tool_call.get("function", {}).get("arguments", "{}"),
-                    tool_call_id=tool_call["id"],
-                    cwd=self.workspace_path,
-                    renderValues={"config": self.conf},
-                )
-                print(f"exec tool result {message}")
-                messages.append(message)
-
-        if waitFunction is False:
-            with open(os.path.join(self.conf["task_path"], "title.md"), "r") as h:
-                taskTitle = h.read()
-
-            h = open(os.path.join(self.conf["task_path"], "output.md"), "w")
-            h.write(lastMsgContent)
-            h.close()
-            self.recode_event("### " + taskTitle + "\n" +lastMsgContent)
+        for h in result.history:
+            result = []
+            for r in h.result:
+                if r.extracted_content:
+                    result.append({
+                        "content": r.extracted_content,
+                        "error": r.error,
+                    })
+            output["history"].append({
+                "url": h.state.url,
+                "result": result,
+            })
 
         h = open(context_file, 'w')
-        h.write(json.dumps(messages, indent=4, ensure_ascii=False))
+        h.write(json.dumps(output, indent=4, ensure_ascii=False))
         h.close()
+   
+        with open(os.path.join(self.conf["task_path"], "title.md"), "r") as h:
+            taskTitle = h.read()
 
-        self.git_commit(lastMsgContent)
-        return waitFunction
+        h = open(os.path.join(self.conf["task_path"], "output.md"), "w")
+        h.write(output["final_result"])
+        h.close()
+        self.record_event("### " + taskTitle + "\n" + output["final_result"])
+
+        self.git_commit(output["final_result"])
 
 
 if __name__ == "__main__":
 
-    agent = ExecutorAgent("/etc/gitops.yaml")
-
-    next_loop = True
-    count = 0
-    while next_loop:
-        if count > 30:
-            print("max loop 30")
-            sys.exit(1)
-        count += 1
-        print(f"\nthought loop: {count}", flush=True)
-        next_loop = agent.run()
+    agent = ExplorerAgent("/etc/gitops.yaml")
+    asyncio.run(agent.run())
