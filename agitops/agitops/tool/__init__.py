@@ -111,7 +111,7 @@ class ToolHandler():
                 tool["function"]["name"] = f"{tool_name}#{tool['function']['name']}"
                 defaultParams[tool["function"]["name"]] = {}
                 properties = {}
-                for key, param_info in tool["function"]["parameters"]["properties"]:
+                for key, param_info in tool["function"]["parameters"]["properties"].items():
                     if param_info.get("default") is not None:
                         defaultParams[tool["function"]["name"]][key] = param_info["default"]
                         if key in tool["function"]["parameters"]["required"]:
