@@ -149,7 +149,7 @@ class ToolHandler():
             return result
 
         renderValues["call"] = {"log_file": "/tmp/test"}
-        defaultParam = tool_object.get(name, {})
+        defaultParam = tool_object["defaultParams"].get(name, {})
         renderDefaultJson = self.jinjaEnv.from_string(json.dumps(defaultParam)).render(**renderValues)
         defaultParam = json.loads(renderDefaultJson)
 
@@ -164,6 +164,7 @@ class ToolHandler():
         # 创建一个临时文件并写入 arguments 内容
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
             args["command"] = function_name
+            print(json.dumps(args, indent=4))
             f.write(json.dumps(args))
 
         (ret, stdout, stderr) = run_command(f"{sys.executable} {tool_object['path']} --json-input {f.name}", cwd=cwd, envs=envs)
