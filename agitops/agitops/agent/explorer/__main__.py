@@ -6,6 +6,7 @@ import tempfile
 import yaml
 import json
 import subprocess
+import asyncio
 
 from openai import OpenAI
 from ...util import run_command
@@ -123,7 +124,7 @@ class ExplorerAgent():
         h.write(content)
         h.close()
 
-    def run(self):
+    async def run(self):
 
         context_file = os.path.join(self.conf["task_path"], "context.json")
 
@@ -143,6 +144,7 @@ class ExplorerAgent():
             override_system_message=self.sys_prompt,
             controller=controller,
         )
+        result = await agent.run(max_steps=10)
 
         output = {}
         output["final_result"] = result.final_result()
@@ -179,4 +181,4 @@ class ExplorerAgent():
 if __name__ == "__main__":
 
     agent = ExplorerAgent("/etc/gitops.yaml")
-    agent.run()
+    asyncio.run(agent.run())
