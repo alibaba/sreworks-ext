@@ -78,22 +78,20 @@ class PlanAgent():
     planPrompt = """
 你是一个任务管理专家，你不用直接执行任务，请合理地提出计划解决 <question>..</question> 中提到的问题。
 <questionFiles> .. </questionFiles>为用户上传的与问题相关的文件。
-整个计划任务请使用YAML数组编写，最顶层步骤最好不要超过6步。
-如果有子任务直接使用YAML嵌套，子任务使用children作为key，建议简单任务不使用子任务。
-每个任务名使用title字段，任务描述使用description字段。
+整个计划任务请使用YAML数组编写，简单任务步骤最好不要超过6步，没有子任务。
+每个任务名使用title字段，任务描述使用description字段，每个任务的description需要是一个明确要解决的问题，而不是答案。
 每个任务的executor字段可以指定是browser或explorer。browser是在浏览器中完成任务，explorer是在Linux文件系统中完成任务，默认为explorer。
-每个任务的description需要是一个明确要解决的问题，而不是答案。
 """
 
-    reviewPrompt = """
-你是一个任务管理专家，当前用户的问题是 <question>..</question> <questionFiles> .. </questionFiles>中。
-<plan>...</plan> 是另外一个专家设计的任务计划。请从下面这些点进行评估优化。
-1. 每个任务的嵌套子任务不能只有一个，如果有这种情况则将其与父任务合并一个。
-2. 分解的任务最终不要包含去其他平台发帖寻求帮助等无法在确定时间获得反馈的任务。
-3. 请根据用户问题难度分析当前的任务计划拆分是否合适，如果不合适则请进行调整。
-4. 避免出现顶层只有一个父任务的情况，如果出现，请将顶层的任务取消，下面子任务往上提。
-请估计上面这些点，优化<plan></plan>中的任务计划，再次给出YAML。
-"""
+#     reviewPrompt = """
+# 你是一个任务管理专家，当前用户的问题是 <question>..</question> <questionFiles> .. </questionFiles>中。
+# <plan>...</plan> 是另外一个专家设计的任务计划。请从下面这些点进行评估优化。
+# 1. 每个任务的嵌套子任务不能只有一个，如果有这种情况则将其与父任务合并一个。
+# 2. 分解的任务最终不要包含去其他平台发帖寻求帮助等无法在确定时间获得反馈的任务。
+# 3. 请根据用户问题难度分析当前的任务计划拆分是否合适，如果不合适则请进行调整。
+# 4. 避免出现顶层只有一个父任务的情况，如果出现，请将顶层的任务取消，下面子任务往上提。
+# 请估计上面这些点，优化<plan></plan>中的任务计划，再次给出YAML。
+# """
 
     finalPrompt = """
 你是一个任务管理专家，当前用户的问题是 <question>..</question> <questionFiles> .. </questionFiles>中。
@@ -268,9 +266,9 @@ class PlanAgent():
             plan_yaml = self.call_llm(self.planPrompt, user_query(user_message))
             print("raw plan yaml :")
             print(plan_yaml, flush=True)
-            plan_yaml = self.call_llm(self.reviewPrompt, plan_yaml)
-            print("plan yaml after review :")
-            print(plan_yaml, flush=True)
+            # plan_yaml = self.call_llm(self.reviewPrompt, plan_yaml)
+            # print("plan yaml after review :")
+            # print(plan_yaml, flush=True)
             plan = parse_yaml(plan_yaml)
             plan = set_plan_id(plan)
             self.record_event("# 计划\n" + plan_to_markdown(plan))
