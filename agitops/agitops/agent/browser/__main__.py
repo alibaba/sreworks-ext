@@ -7,6 +7,7 @@ import yaml
 import json
 import subprocess
 import asyncio
+import urllib.request
 
 from openai import OpenAI
 from ...util import run_command
@@ -186,6 +187,28 @@ if __name__ == "__main__":
         return_code = process.returncode
         result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
         print(result)
+        return ActionResult(extracted_content=result)
+
+    @controller.action('google')
+    def search(query: str) -> ActionResult:
+        google_api_key = agent.conf.get("google_api_key")
+        google_api_cx = agent.conf.get("google_api_cx")
+
+        url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_api_cx}&q={query}"
+
+        result = ""
+        try:
+            with urllib.request.urlopen(url) as response:
+                if response.status == 200:
+                    result = json.loads(response.read().decode('utf-8'))
+                    print(json.dumps(data, indent=4, ensure_ascii=False))
+                else:
+                    result = f"请求失败，状态码: {response.status}"
+                    print(result)
+        except urllib.error.URLError as e:
+            result = f"请求出错: {e.reason}"
+            print(result)
+
         return ActionResult(extracted_content=result)
 
     asyncio.run(agent.run())

@@ -49,7 +49,7 @@ class ExecutorAgent():
             with open(os.path.join(self.workspace_path, ".gitignore"), 'w') as f:
                 pass 
 
-        self.toolHandler = ToolHandler({"bash": "bash.py"})
+        self.toolHandler = ToolHandler({"bash": "bash.py", "google": "google.py"})
 
         self.llm_client = OpenAI(
             api_key=self.conf["llm_api_key"],
@@ -148,6 +148,7 @@ class ExecutorAgent():
                     arguments=tool_call.get("function", {}).get("arguments", "{}"),
                     tool_call_id=tool_call["id"],
                     cwd=self.workspace_path,
+                    envs=self.conf,
                     renderValues={"config": self.conf},
                 )
                 print(f"exec tool result {message}")
