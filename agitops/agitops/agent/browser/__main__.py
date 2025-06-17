@@ -181,9 +181,11 @@ if __name__ == "__main__":
             stderr=subprocess.PIPE,
             universal_newlines=True
         )
+        print(f"exec_command: {exec_command}")
         stdout, stderr = process.communicate()
         return_code = process.returncode
         result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
+        print(result)
         return ActionResult(extracted_content=result)
 
     asyncio.run(agent.run())
