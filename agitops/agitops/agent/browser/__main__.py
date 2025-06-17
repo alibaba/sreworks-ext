@@ -185,7 +185,7 @@ if __name__ == "__main__":
         print(f"exec_command: {exec_command}")
         stdout, stderr = process.communicate()
         return_code = process.returncode
-        result = "ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
+        result = f"ret:{return_code}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
         print(result)
         return ActionResult(extracted_content=result)
 
