@@ -8,6 +8,7 @@ import json
 import subprocess
 import asyncio
 import urllib.request
+from urllib.parse import quote
 
 from openai import OpenAI
 from ...util import run_command
@@ -163,6 +164,7 @@ class ExplorerAgent():
         h = open(os.path.join(self.conf["task_path"], "output.md"), "w")
         h.write(output["final_result"])
         h.close()
+
         self.record_event("### " + taskTitle + "\n" + output["final_result"])
 
         self.git_commit(output["final_result"])
@@ -194,7 +196,7 @@ if __name__ == "__main__":
         google_api_key = agent.conf.get("google_api_key")
         google_api_cx = agent.conf.get("google_api_cx")
 
-        url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_api_cx}&q={query}"
+        url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_api_cx}&q={quote(query)}"
 
         result = ""
         try:

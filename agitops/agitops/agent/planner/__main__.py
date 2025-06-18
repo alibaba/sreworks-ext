@@ -100,9 +100,10 @@ class PlanAgent():
 
     taskPrompt = """
 你是一个任务管理专家，当前用户的问题是 <question>..</question> <questionFiles> .. </questionFiles>中。
+<plan>...</plan> 是当前任务执行进度。
 <task>...</task> 是当前需要分配给这个执行器的任务。
 请整理整合任务内容，使得执行器能够只根据任务内容来执行任务。
-请确保输出的任务内容中包含了 <question> <questionFiles> 部分与<task>相关的必要信息。
+请确保输出的任务内容中包含了 <question> <questionFiles> <plan> 部分与<task>相关的必要信息。
 """
 
 
@@ -307,7 +308,7 @@ class PlanAgent():
             if not os.path.exists(todo_task_path):
                 os.makedirs(todo_task_path, exist_ok=True)
 
-            task_input = self.call_llm(self.taskPrompt, f"<task>{todo_task}</task>")
+            task_input = self.call_llm(self.taskPrompt, user_query(user_message) + f" <plan>{json.dumps(plan)}</plan> <task>{todo_task}</task>")
             h = open(todo_task_path + "/input.md", 'w')
             h.write(task_input)
             h.close()
