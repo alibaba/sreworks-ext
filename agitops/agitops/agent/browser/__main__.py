@@ -197,6 +197,7 @@ if __name__ == "__main__":
         google_api_cx = agent.conf.get("google_api_cx")
 
         url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_api_cx}&q={quote(query)}"
+        print(f"googleapi: {url}")
 
         result = ""
         try:

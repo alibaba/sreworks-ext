@@ -12,6 +12,7 @@ google_api_cx = os.getenv("google_api_cx")
 
 def googleapi(query):
     url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_api_cx}&q={query}"
+    print(f"googleapi: {url}")
 
     try:
         with urllib.request.urlopen(url) as response:

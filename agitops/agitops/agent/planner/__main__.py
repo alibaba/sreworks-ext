@@ -150,6 +150,8 @@ class PlanAgent():
             model=self.conf["llm_model"],
             messages=messages,
         ).to_dict()
+        print("call_llm")
+        print(json.dumps(completion, indent=4, ensure_ascii=False))
         return completion["choices"][0]["message"]["content"]
 
     def load_chats(self):
