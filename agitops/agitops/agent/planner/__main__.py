@@ -102,8 +102,7 @@ class PlanAgent():
 你是一个任务管理专家，当前用户的问题是 <question>..</question> <questionFiles> .. </questionFiles>中。
 <plan>...</plan> 是当前任务执行进度。
 <task>...</task> 是当前需要分配给这个执行器的任务。
-请整理整合任务内容，使得执行器能够只根据任务内容来执行任务。
-请确保输出的任务内容中包含了 <question> <questionFiles> <plan> 部分与<task>相关的必要信息。
+请整理以及整合上述所有信息，补充完善<task>中提到的任务内容，使得执行器能够根据任务内容来执行任务。
 """
 
 
