@@ -309,7 +309,7 @@ class PlanAgent():
             if not os.path.exists(todo_task_path):
                 os.makedirs(todo_task_path, exist_ok=True)
 
-            task_input = self.call_llm(self.taskPrompt, user_query(user_message) + f" <plan>{json.dumps(plan)}</plan> <task>{todo_task}</task>")
+            task_input = self.call_llm(self.taskPrompt + f" {user_query(user_message)} <plan>{json.dumps(plan)}</plan>", "<task>{todo_task}</task>")
             h = open(todo_task_path + "/input.md", 'w')
             h.write(task_input)
             h.close()
